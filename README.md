@@ -1,3 +1,3 @@
 # coachassistant
-An software suite to assist coaches/instructors during actual trianing
 
+A software suite to assist coaches/instructors during actual training.

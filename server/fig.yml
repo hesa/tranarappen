@@ -1,0 +1,13 @@
+server:
+  build: .
+  links:
+  - database
+  ports:
+  - "3000:3000"
+  environment:
+    DB_PASSWORD: GoiCJTC4tbt4
+database:
+  image: postgres:9.4.0
+  environment:
+    POSTGRES_USER: lambdatrade
+    POSTGRES_PASSWORD: GoiCJTC4tbt4

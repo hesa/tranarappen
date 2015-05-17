@@ -1,0 +1,24 @@
+name:          coachassistant-server
+version:       0.0.0.0
+synopsis:      The server component for coachassistant
+description:   The server component for coachassitant, a software suite
+               to assist coaches/instructors during actual trianing.
+license:       BSD3
+license-file:  LICENSE
+author:        Jon Kristensen
+maintainer:    info@lambdatrade.com
+copyright:     Jon Kristensen, 2015
+category:      Sports
+build-type:    Simple
+cabal-version: >=1.10
+
+executable coachassistant-server
+  main-is:          Main.hs
+  build-depends:    base >=4.7 && <4.8,
+                    lambdatrade-common,
+                    persistent,
+                    persistent-template,
+                    text,
+                    transformers
+  hs-source-dirs:   source
+  default-language: Haskell2010

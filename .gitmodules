@@ -1,0 +1,3 @@
+[submodule "server/lambdatrade-common"]
+	path = server/lambdatrade-common
+	url = git@github.com:lambdatrade/lambdatrade-common.git

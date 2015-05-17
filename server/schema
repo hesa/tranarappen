@@ -1,0 +1,8 @@
+Club
+    name Text
+Member
+    name Text
+    clubId ClubId
+TrainingPhase
+    name Text
+    clubId ClubId

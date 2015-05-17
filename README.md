@@ -1,2 +1,3 @@
 # coachassistant
-Android client app to (Sport) Coach Assistant
+An software suite to assist coaches/instructors during actual trianing
+

@@ -5,11 +5,11 @@ RUN apt-get -y upgrade
 RUN apt-get -y install libpq-dev netcat
 RUN cabal update
 
-COPY ./lambdatrade-common /opt/cabal/lambdatrade-common
-COPY coachassistant-server.cabal /opt/cabal/coachassistant-server.cabal
+COPY ./lambdatrade-common /opt/dependencies/lambdatrade-common
+COPY coachassistant-server.cabal /opt/dependencies/coachassistant-server.cabal
 COPY run.sh /app/run.sh
 
-RUN cd /opt/cabal && cabal --ignore-sandbox install --only-dep . ./lambdatrade-common -j4 --force-reinstall
+RUN cd /opt/dependencies && cabal --ignore-sandbox install --only-dep . ./lambdatrade-common -j4 --force-reinstall
 
 COPY . /opt/app
 

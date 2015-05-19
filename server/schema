@@ -1,8 +1,8 @@
-Club
+Club json
     name Text
-Member
+Member json
     name Text
     clubId ClubId
-TrainingPhase
+TrainingPhase json
     name Text
     clubId ClubId

@@ -15,6 +15,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Reader
 import Data.Aeson
 import Data.Typeable
+import Data.UUID
 import Database.Persist
 import Database.Persist.Quasi
 import Database.Persist.Sql

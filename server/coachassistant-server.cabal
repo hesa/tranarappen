@@ -25,6 +25,7 @@ executable coachassistant-server
                     rest-wai,
                     text,
                     transformers,
+                    uuid,
                     warp
   hs-source-dirs:   source
   default-language: Haskell2010

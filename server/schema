@@ -1,8 +1,20 @@
 Club json
+    uuid UUID
     name Text
+    Primary uuid
 Member json
+    uuid UUID
     name Text
     clubId ClubId
+    teamId TeamId
+    Primary uuid
+Team json
+    uuid UUID
+    name Text
+    clubId ClubId
+    Primary uuid
 TrainingPhase json
+    uuid UUID
     name Text
     clubId ClubId
+    Primary uuid

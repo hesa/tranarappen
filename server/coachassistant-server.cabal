@@ -16,9 +16,11 @@ executable coachassistant-server
   main-is:          Main.hs
   build-depends:    aeson,
                     base >=4.7 && <4.8,
+                    data-default,
                     json-schema,
                     lambdatrade-common,
                     mtl,
+                    mtl-compat,
                     persistent,
                     persistent-template,
                     rest-core,

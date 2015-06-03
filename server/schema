@@ -3,7 +3,7 @@ Club
     name Text
     Primary uuid
     UniqueClubUuid uuid
-Member json
+Member
     uuid UUID
     name Text
     clubId UUID

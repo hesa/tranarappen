@@ -39,13 +39,17 @@ import qualified Rest.Resource as R
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] $(persistFileWith lowerCaseSettings "schema")
 
 mkGenericJSON [t|Club|]
+mkGenericJSON [t|Team|]
 
-mkJsonType ''Club def { derivedPrefix = "create", removeFields = ["uuid"] }
+mkJsonType ''Club def { derivedPrefix = "publish", removeFields = ["uuid"] }
+mkJsonType ''Team def { derivedPrefix = "publish", removeFields = ["clubId", "uuid"] }
 
 newtype App a = App { unApi :: ReaderT ConnectionPool IO a } deriving (Applicative, Functor, Monad)
 
 deriving instance Generic Club
 deriving instance Typeable Club
+deriving instance Generic Team
+deriving instance Typeable Team
 
 runSql :: ReaderT ConnectionPool IO a -> App a
 runSql = App
@@ -53,11 +57,18 @@ runSql = App
 router :: Router App App
 router = root -/ route clubsR
   where
-    clubsR :: Resource App (ReaderT Club App) Club () Void
+    clubsR :: Resource App (ReaderT UUID App) UUID () Void
     clubsR = mkResourceReader { R.create = Just createClubH
+                              , R.get = Just get
                               , R.list = const list
                               , R.name = "clubs"
-                              , R.schema = withListing () $ named [] }
+                              , R.schema = withListing () (unnamedSingleRead id) }
+    get :: Handler (ReaderT UUID App)
+    get = mkIdHandler jsonO $ \_ uuid -> ExceptT $ do
+        Just club <- lift $ runSql $ do
+            pool <- ask
+            runSqlPool (getBy (UniqueClubUuid uuid)) pool
+        return (Right (entityVal club))
     list :: ListHandler App
     list = mkListing jsonO $ \_ -> lift $ runSql $ do
         pool <- ask
@@ -67,10 +78,10 @@ router = root -/ route clubsR
     createClubH = mkInputHandler (jsonI . jsonO) $ \club -> ExceptT $ do
         r <- runSql (createClub club)
         return $ Right r
-    createClub :: CreateClub -> ReaderT ConnectionPool IO Club
+    createClub :: PublishClub -> ReaderT ConnectionPool IO Club
     createClub c = do
         uuid <- lift nextRandom
-        let club = Club uuid (createClubName c)
+        let club = Club uuid (publishClubName c)
         pool <- ask
         runSqlPool (insert club) pool
         return club

@@ -6,19 +6,22 @@ Club
 Member json
     uuid UUID
     name Text
-    teamId TeamId
+    clubId UUID
+    teamId UUID Maybe
     Primary uuid
-    Foreign Club clubId uuid
+    Foreign Club clubIdKey clubId
     UniqueMemberUuid uuid
 Team
     uuid UUID
     name Text
+    clubId UUID
     Primary uuid
-    Foreign Club clubId uuid
+    Foreign Club clubIdKey clubId
     UniqueTeamUuid uuid
 TrainingPhase json
     uuid UUID
     name Text
+    clubId UUID
     Primary uuid
-    Foreign Club clubId uuid
+    Foreign Club clubIdKey clubId
     UniqueTrainingPhaseUuid uuid

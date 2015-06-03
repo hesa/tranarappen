@@ -41,10 +41,12 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] $(persistFileWith lowerCas
 mkGenericJSON [t|Club|]
 mkGenericJSON [t|Member|]
 mkGenericJSON [t|Team|]
+mkGenericJSON [t|TrainingPhase|]
 
 mkJsonType ''Club def { derivedPrefix = "publish", removeFields = ["uuid"] }
 mkJsonType ''Member def { derivedPrefix = "publish", removeFields = ["clubId", "uuid"] }
 mkJsonType ''Team def { derivedPrefix = "publish", removeFields = ["clubId", "uuid"] }
+mkJsonType ''TrainingPhase def { derivedPrefix = "publish", removeFields = ["clubId", "uuid"] }
 
 newtype App a = App { unApi :: ReaderT ConnectionPool IO a } deriving (Applicative, Functor, Monad)
 
@@ -54,6 +56,8 @@ deriving instance Generic Member
 deriving instance Typeable Member
 deriving instance Generic Team
 deriving instance Typeable Team
+deriving instance Generic TrainingPhase
+deriving instance Typeable TrainingPhase
 
 runSql :: ReaderT ConnectionPool IO a -> App a
 runSql = App
@@ -61,11 +65,13 @@ runSql = App
 type ClubUuid = UUID
 type MemberUuid = UUID
 type TeamUuid = UUID
+type TrainingPhaseUuid = UUID
 
 router :: Router App App
 router = root -/ route clubsR
               --/ route clubsMembersR
               --/ route clubsTeamsR
+              --/ route clubsTrainingPhasesR
   where
     clubsR :: Resource App (ReaderT UUID App) UUID () Void
     clubsR = mkResourceReader { R.create = Just create
@@ -183,6 +189,51 @@ router = root -/ route clubsR
                 runSqlPool (Database.Persist.update (TeamKey uuid) [TeamName =. publishTeamName publishTeam]) pool
                 team <- runSqlPool (Database.Persist.get (TeamKey uuid)) pool
                 return $ Right team
+    clubsTrainingPhasesR :: Resource (ReaderT ClubUuid App) (ReaderT TrainingPhaseUuid (ReaderT ClubUuid App)) TrainingPhaseUuid () Void
+    clubsTrainingPhasesR = mkResourceReader { R.create = Just create
+                                   , R.get = Just get
+                                   , R.list = const list
+                                   , R.name = "training-phases"
+                                   , R.remove = Just remove
+                                   , R.schema = withListing () (unnamedSingleRead id)
+                                   , R.update = Just update }
+      where
+        create :: Handler (ReaderT ClubUuid App)
+        create = mkInputHandler (jsonI . jsonO) $ \publishTrainingPhase -> ExceptT $ do
+            clubId <- ask
+            lift $ runSql $ do
+                uuid <- lift nextRandom
+                let trainingPhase = TrainingPhase uuid (publishTrainingPhaseName publishTrainingPhase) clubId
+                pool <- ask
+                runSqlPool (insert trainingPhase) pool
+                return $ Right trainingPhase
+        get :: Handler (ReaderT TrainingPhaseUuid (ReaderT ClubUuid App))
+        get = mkIdHandler jsonO $ \_ uuid -> ExceptT $ do
+            Just trainingPhase <- lift $ lift $ runSql $ do
+                pool <- ask
+                runSqlPool (Database.Persist.get (TrainingPhaseKey uuid)) pool
+            return (Right trainingPhase)
+        list :: ListHandler (ReaderT ClubUuid App)
+        list = mkListing jsonO $ \_ -> lift $ do
+            uuid <- ask
+            lift $ runSql $ do
+                pool <- ask
+                trainingPhases <- runSqlPool (selectList [TrainingPhaseClubId ==. uuid] [Asc TrainingPhaseName]) pool
+                return (map entityVal trainingPhases)
+        remove :: Handler (ReaderT TrainingPhaseUuid (ReaderT ClubUuid App))
+        remove = mkIdHandler jsonO $ \_ uuid -> ExceptT $ do
+            lift $ lift $ runSql $ do
+                pool <- ask
+                runSqlPool (delete (TrainingPhaseKey uuid)) pool
+            return (Right ())
+        update :: Handler (ReaderT TrainingPhaseUuid (ReaderT ClubUuid App))
+        update = mkInputHandler (jsonI . jsonO) $ \publishTrainingPhase -> ExceptT $ do
+            uuid <- ask
+            lift $ lift $ runSql $ do
+                pool <- ask
+                runSqlPool (Database.Persist.update (TrainingPhaseKey uuid) [TrainingPhaseName =. publishTrainingPhaseName publishTrainingPhase]) pool
+                trainingPhases <- runSqlPool (Database.Persist.get (TrainingPhaseKey uuid)) pool
+                return $ Right trainingPhases
 
 api :: Api App
 api = [(mkVersion 0 0 0, Some1 router)]

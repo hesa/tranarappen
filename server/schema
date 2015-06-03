@@ -18,7 +18,7 @@ Team
     Primary uuid
     Foreign Club clubIdKey clubId
     UniqueTeamUuid uuid
-TrainingPhase json
+TrainingPhase
     uuid UUID
     name Text
     clubId UUID

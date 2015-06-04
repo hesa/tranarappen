@@ -84,12 +84,14 @@ router = root -/ route clubsR
               --/ route clubsTrainingPhasesR
               -/ route clubCompositeR
   where
-    clubsR :: Resource App (ReaderT UUID App) UUID () Void
+    clubsR :: Resource App (ReaderT ClubUuid App) ClubUuid () Void
     clubsR = mkResourceReader { R.create = Just create
                               , R.get = Just get
                               , R.list = const list
                               , R.name = "clubs"
-                              , R.schema = withListing () (unnamedSingleRead id) }
+                              , R.remove = Just remove
+                              , R.schema = withListing () (unnamedSingleRead id)
+                              , R.update = Just update}
       where
         create :: Handler App
         create = mkInputHandler (jsonI . jsonO) $ \publishClub -> ExceptT $ do
@@ -99,7 +101,7 @@ router = root -/ route clubsR
                 pool <- ask
                 runSqlPool (insert club) pool
                 return $ Right club
-        get :: Handler (ReaderT UUID App)
+        get :: Handler (ReaderT ClubUuid App)
         get = mkIdHandler jsonO $ \_ uuid -> ExceptT $ do
             Just club <- lift $ runSql $ do
                 pool <- ask
@@ -110,6 +112,20 @@ router = root -/ route clubsR
             pool <- ask
             clubs <- runSqlPool (selectList [] [Asc ClubName]) pool
             return (map entityVal clubs)
+        remove :: Handler (ReaderT ClubUuid App)
+        remove = mkIdHandler jsonO $ \_ uuid -> ExceptT $ do
+            lift $ runSql $ do
+                pool <- ask
+                runSqlPool (delete (ClubKey uuid)) pool
+            return (Right ())
+        update :: Handler (ReaderT ClubUuid App)
+        update = mkInputHandler (jsonI . jsonO) $ \publishClub -> ExceptT $ do
+            uuid <- ask
+            lift $ runSql $ do
+                pool <- ask
+                runSqlPool (Database.Persist.update (ClubKey uuid) [ ClubName =. publishClubName publishClub ]) pool
+                club <- runSqlPool (Database.Persist.get (ClubKey uuid)) pool
+                return $ Right club
     clubsMembersR :: Resource (ReaderT ClubUuid App) (ReaderT MemberUuid (ReaderT ClubUuid App)) MemberUuid () Void
     clubsMembersR = mkResourceReader { R.create = Just create
                                    , R.get = Just get
@@ -145,7 +161,11 @@ router = root -/ route clubsR
         remove = mkIdHandler jsonO $ \_ uuid -> ExceptT $ do
             lift $ lift $ runSql $ do
                 pool <- ask
-                runSqlPool (delete (MemberKey uuid)) pool
+                flip runSqlPool pool $ do
+                    deleteWhere [MemberClubUuid ==. uuid]
+                    deleteWhere [TrainingPhaseClubUuid ==. uuid]
+                    deleteWhere [TeamClubUuid ==. uuid]
+                    delete (MemberKey uuid)
             return (Right ())
         update :: Handler (ReaderT MemberUuid (ReaderT ClubUuid App))
         update = mkInputHandler (jsonI . jsonO) $ \publishMember -> ExceptT $ do

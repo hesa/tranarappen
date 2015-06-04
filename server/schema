@@ -2,26 +2,22 @@ Club
     uuid UUID
     name Text
     Primary uuid
-    UniqueClubUuid uuid
 Member
     uuid UUID
     name Text
-    clubId UUID
-    teamId UUID Maybe
+    clubUuid UUID
+    teamUuid UUID Maybe
     Primary uuid
-    Foreign Club clubIdKey clubId
-    UniqueMemberUuid uuid
+    Foreign Club clubUuidKey clubUuid
 Team
     uuid UUID
     name Text
-    clubId UUID
+    clubUuid UUID
     Primary uuid
-    Foreign Club clubIdKey clubId
-    UniqueTeamUuid uuid
+    Foreign Club clubUuidKey clubUuid
 TrainingPhase
     uuid UUID
     name Text
-    clubId UUID
+    clubUuid UUID
     Primary uuid
-    Foreign Club clubIdKey clubId
-    UniqueTrainingPhaseUuid uuid
+    Foreign Club clubUuidKey clubUuid

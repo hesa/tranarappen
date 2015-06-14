@@ -21,7 +21,7 @@ executable coachassistant-server
                     lambdatrade-common,
                     mtl,
                     mtl-compat,
-                    persistent,
+                    persistent >=2,
                     persistent-template,
                     rest-core,
                     rest-wai,

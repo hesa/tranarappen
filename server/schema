@@ -2,6 +2,7 @@ Club
     uuid UUID
     name Text
     Primary uuid
+    UniqueClubName name
 Member
     uuid UUID
     name Text
@@ -15,9 +16,11 @@ Team
     clubUuid UUID
     Primary uuid
     Foreign Club clubUuidKey clubUuid
+    UniqueTeamName name clubUuid
 TrainingPhase
     uuid UUID
     name Text
     clubUuid UUID
     Primary uuid
     Foreign Club clubUuidKey clubUuid
+    UniqueTrainingPhaseName name clubUuid

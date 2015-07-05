@@ -13,6 +13,14 @@ For rebuilding the project, do the following:
 
     $ fig kill && fig rm --force && fig build && fig up
 
+Compiling:
+
+    $ cabal sandbox delete
+    $ cabal sandbox init
+    $ cabal update
+    $ cabal sandbox add-source ./lambdatrade-common
+    $ cabal install
+
 ## API example using Curl
 
 Let's start by adding a club:

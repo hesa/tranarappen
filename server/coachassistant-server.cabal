@@ -16,7 +16,9 @@ executable coachassistant-server
   main-is:          Main.hs
   build-depends:    aeson,
                     base >=4.7 && <4.8,
+                    bytestring,
                     data-default,
+                    directory,
                     exceptions,
                     json-schema,
                     lambdatrade-common,

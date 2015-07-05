@@ -13,6 +13,7 @@
 module Main where
 
 import Control.Applicative
+import Control.Concurrent
 import Control.Monad.Except
 import Control.Monad.IO.Class
 import Control.Monad.Reader
@@ -31,9 +32,11 @@ import Network.Wai.Handler.Warp
 import Rest
 import Rest.Api
 import Rest.Driver.Wai
+import System.Directory
 
 import Data.Text (Text)
 
+import qualified Data.ByteString.Lazy as BL
 import qualified Control.Monad.Catch as E
 import qualified Data.JSON.Schema as Schema
 import qualified Rest.Resource as R
@@ -74,6 +77,7 @@ type ClubUuid = UUID
 type MemberUuid = UUID
 type TeamUuid = UUID
 type TrainingPhaseUuid = UUID
+type VideoUuid = UUID
 
 data ClubComposite = ClubComposite { clubCompositeName :: Text
                                    , clubCompositeMembers :: [Member]
@@ -91,7 +95,7 @@ instance Schema.JSONSchema AppError where
     schema _ = Schema.Object []
 
 instance ToJSON AppError where
-    toJSON Conflict = object []
+    toJSON _ = object []
 
 -- conflictInsert :: (MonadBaseControl IO m, PersistEntity b, MonadReader (Pool SqlBackend) m, MonadIO m, (~) * (PersistEntityBackend b) SqlBackend) => b -> m (Either (Reason AppError) b)
 conflictInsert e = do
@@ -105,6 +109,8 @@ router = root -/ route clubsR
               --/ route clubsMembersR
               --/ route clubsTeamsR
               --/ route clubsTrainingPhasesR
+              --/ route clubsVideosR
+              --/ route clubsUploadR
               -/ route clubCompositeR
   where
     clubsR :: Resource App (ReaderT ClubUuid App) ClubUuid () Void
@@ -255,6 +261,39 @@ router = root -/ route clubsR
                 runQuery (Database.Persist.update (TrainingPhaseKey uuid) [TrainingPhaseName =. publishTrainingPhaseName publishTrainingPhase])
                 trainingPhases <- runQuery (Database.Persist.get (TrainingPhaseKey uuid))
                 return $ Right trainingPhases
+    clubsVideosR :: Resource (ReaderT ClubUuid App) (ReaderT VideoUuid (ReaderT ClubUuid App)) VideoUuid Void Void
+    clubsVideosR = mkResourceReader { R.get = Just get
+                                    , R.name = "videos"
+                                    , R.schema = noListing (unnamedSingleRead id)
+                                    }
+      where
+        get :: Handler (ReaderT VideoUuid (ReaderT ClubUuid App))
+        get = mkIdHandler fileO $ \() uuid -> ExceptT $ do
+            file <- liftIO $ BL.readFile ("videos/" ++ (toString uuid))
+            return (Right (file, "", False)) -- TODO
+    clubsUploadR :: Resource (ReaderT ClubUuid App) (ReaderT VideoUuid (ReaderT ClubUuid App)) VideoUuid Void Void
+    clubsUploadR = mkResourceReader { R.create = Just create
+                                    , R.get = Just get
+                                    , R.name = "upload"
+                                    , R.schema = noListing (unnamedSingleRead id)
+                                    }
+      where
+        create :: Handler (ReaderT ClubUuid App)
+        create = mkInputHandler (fileI . stringO) $ \video -> ExceptT $ do
+            clubUuid <- ask
+            uuid <- liftIO nextRandom
+            let upload = Video uuid Nothing clubUuid
+            liftIO $ BL.writeFile ("upload/" ++ toString uuid) video
+            lift $ runSql $ runQuery $ insert upload
+            return (Right (toString uuid))
+        get :: Handler (ReaderT VideoUuid (ReaderT ClubUuid App))
+        get = mkIdHandler stringO $ \() uuid -> ExceptT $ do
+            upload <- lift $ lift $ runSql $ runQuery (Database.Persist.get (VideoKey uuid))
+            case upload of
+                Nothing -> return (Left NotFound)
+                Just (Video { videoSuccess = Nothing }) -> return (Right "Processing")
+                Just (Video { videoSuccess = Just False }) -> return (Right "Failure")
+                Just (Video { videoSuccess = Just True }) -> return (Right "Success") -- TODO: 303 See Other
     clubCompositeR :: Resource App (ReaderT UUID App) UUID Void Void
     clubCompositeR = mkResourceReader { R.get = Just get
                                       , R.name = "club-composite"
@@ -275,4 +314,15 @@ api = [(mkVersion 0 0 0, Some1 router)]
 main :: IO ()
 main = withPool 10 $ \pool -> liftIO $ do
     runSqlPool (runMigration migrateAll) pool
+    forkIO (uploadThread pool)
     run 3000 (apiToApplication (\(App r) -> runReaderT r pool) api)
+
+uploadThread :: ConnectionPool -> IO ()
+uploadThread pool = forever $ do
+    threadDelay (10 * 10^6)
+    flip runReaderT pool $ do
+        uploads <- runQuery (selectList [VideoSuccess ==. Nothing] [])
+        flip mapM_ uploads $ \uploadEntity -> do
+            let Video uuid _ _ = entityVal uploadEntity
+            liftIO (copyFile ("upload/" ++ (toString uuid)) ("videos/" ++ (toString uuid)))
+            runQuery (Database.Persist.update (entityKey uploadEntity) [VideoSuccess =. Just True])

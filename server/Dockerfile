@@ -18,4 +18,6 @@ RUN cd /opt/app && cabal --ignore-sandbox install . ./lambdatrade-common --force
 ENV PATH /root/.cabal/bin:$PATH
 
 WORKDIR /app
+RUN mkdir /app/upload
+RUN mkdir /app/videos
 CMD ["sh", "run.sh"]

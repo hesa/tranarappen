@@ -24,3 +24,9 @@ TrainingPhase
     Primary uuid
     Foreign Club clubUuidKey clubUuid
     UniqueTrainingPhaseName name clubUuid
+Video
+    uuid UUID
+    success Bool Maybe
+    clubUuid UUID
+    Primary uuid
+    Foreign Club clubUuidKey clubUuid

@@ -17,6 +17,7 @@ executable coachassistant-server
   build-depends:    aeson,
                     base >=4.7 && <4.8,
                     data-default,
+                    exceptions,
                     json-schema,
                     lambdatrade-common,
                     mtl,

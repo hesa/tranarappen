@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -33,6 +34,7 @@ import Rest.Driver.Wai
 
 import Data.Text (Text)
 
+import qualified Control.Monad.Catch as E
 import qualified Data.JSON.Schema as Schema
 import qualified Rest.Resource as R
 
@@ -48,7 +50,7 @@ mkJsonType ''Member def { derivedPrefix = "publish", removeFields = ["clubUuid",
 mkJsonType ''Team def { derivedPrefix = "publish", removeFields = ["clubUuid", "uuid"] }
 mkJsonType ''TrainingPhase def { derivedPrefix = "publish", removeFields = ["clubUuid", "uuid"] }
 
-newtype App a = App { unApi :: ReaderT ConnectionPool IO a } deriving (Applicative, Functor, Monad)
+newtype App a = App { unApi :: ReaderT ConnectionPool IO a } deriving (Applicative, Functor, Monad, E.MonadCatch, MonadIO, E.MonadThrow)
 
 deriving instance Generic Club
 deriving instance Typeable Club
@@ -65,6 +67,9 @@ deriving instance Typeable ClubComposite
 runSql :: ReaderT ConnectionPool IO a -> App a
 runSql = App
 
+-- runQuery :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m) => SqlPersistT m b -> m b
+runQuery a = ask >>= runSqlPool a
+
 type ClubUuid = UUID
 type MemberUuid = UUID
 type TeamUuid = UUID
@@ -76,6 +81,24 @@ data ClubComposite = ClubComposite { clubCompositeName :: Text
                                    , clubCompositeTrainingPhases :: [TrainingPhase] }
 
 mkGenericJSON [t|ClubComposite|]
+
+data AppError = Conflict deriving Typeable
+
+instance ToResponseCode AppError where
+    toResponseCode Conflict = 409
+
+instance Schema.JSONSchema AppError where
+    schema _ = Schema.Object []
+
+instance ToJSON AppError where
+    toJSON Conflict = object []
+
+-- conflictInsert :: (MonadBaseControl IO m, PersistEntity b, MonadReader (Pool SqlBackend) m, MonadIO m, (~) * (PersistEntityBackend b) SqlBackend) => b -> m (Either (Reason AppError) b)
+conflictInsert e = do
+    result <- runQuery (insertUnique e)
+    return $ case result of
+        Just _ -> Right e
+        Nothing -> Left (CustomReason (DomainReason Conflict))
 
 router :: Router App App
 router = root -/ route clubsR
@@ -94,74 +117,59 @@ router = root -/ route clubsR
                               , R.update = Just update}
       where
         create :: Handler App
-        create = mkInputHandler (jsonI . jsonO) $ \publishClub -> ExceptT $ do
-            runSql $ do
-                uuid <- lift nextRandom
-                let club = Club uuid (publishClubName publishClub)
-                pool <- ask
-                runSqlPool (insert club) pool
-                return $ Right club
+        create = mkInputHandler (jsonI . jsonO . jsonE) $ \publishClub -> do
+            uuid <- liftIO nextRandom
+            let club = Club uuid (publishClubName publishClub)
+            ExceptT $ runSql $ conflictInsert club
         get :: Handler (ReaderT ClubUuid App)
         get = mkIdHandler jsonO $ \_ uuid -> ExceptT $ do
-            Just club <- lift $ runSql $ do
-                pool <- ask
-                runSqlPool (Database.Persist.get (ClubKey uuid)) pool
+            Just club <- lift $ runSql $ runQuery (Database.Persist.get (ClubKey uuid))
             return (Right club)
         list :: ListHandler App
         list = mkListing jsonO $ \_ -> lift $ runSql $ do
-            pool <- ask
-            clubs <- runSqlPool (selectList [] [Asc ClubName]) pool
+            clubs <- runQuery (selectList [] [Asc ClubName])
             return (map entityVal clubs)
         remove :: Handler (ReaderT ClubUuid App)
         remove = mkIdHandler jsonO $ \_ uuid -> ExceptT $ do
-            lift $ runSql $ do
-                pool <- ask
-                runSqlPool (delete (ClubKey uuid)) pool
+            lift $ runSql $ runQuery (delete (ClubKey uuid))
             return (Right ())
         update :: Handler (ReaderT ClubUuid App)
         update = mkInputHandler (jsonI . jsonO) $ \publishClub -> ExceptT $ do
             uuid <- ask
             lift $ runSql $ do
-                pool <- ask
-                runSqlPool (Database.Persist.update (ClubKey uuid) [ ClubName =. publishClubName publishClub ]) pool
-                club <- runSqlPool (Database.Persist.get (ClubKey uuid)) pool
+                runQuery (Database.Persist.update (ClubKey uuid) [ ClubName =. publishClubName publishClub ])
+                club <- runQuery (Database.Persist.get (ClubKey uuid))
                 return $ Right club
     clubsMembersR :: Resource (ReaderT ClubUuid App) (ReaderT MemberUuid (ReaderT ClubUuid App)) MemberUuid () Void
     clubsMembersR = mkResourceReader { R.create = Just create
-                                   , R.get = Just get
-                                   , R.list = const list
-                                   , R.name = "members"
-                                   , R.remove = Just remove
-                                   , R.schema = withListing () (unnamedSingleRead id)
-                                   , R.update = Just update }
+                                     , R.get = Just get
+                                     , R.list = const list
+                                     , R.name = "members"
+                                     , R.remove = Just remove
+                                     , R.schema = withListing () (unnamedSingleRead id)
+                                     , R.update = Just update }
       where
         create :: Handler (ReaderT ClubUuid App)
         create = mkInputHandler (jsonI . jsonO) $ \publishMember -> ExceptT $ do
             clubUuid <- ask
-            lift $ runSql $ do
-                uuid <- lift nextRandom
-                let member = Member uuid (publishMemberName publishMember) clubUuid (publishMemberTeamUuid publishMember)
-                pool <- ask
-                runSqlPool (insert member) pool
-                return $ Right member
+            uuid <- liftIO nextRandom
+            let member = Member uuid (publishMemberName publishMember) clubUuid (publishMemberTeamUuid publishMember)
+            lift $ runSql $ runQuery (insert member)
+            return (Right member)
         get :: Handler (ReaderT MemberUuid (ReaderT ClubUuid App))
         get = mkIdHandler jsonO $ \_ uuid -> ExceptT $ do
-            Just member <- lift $ lift $ runSql $ do
-                pool <- ask
-                runSqlPool (Database.Persist.get (MemberKey uuid)) pool
+            Just member <- lift $ lift $ runSql $ runQuery (Database.Persist.get (MemberKey uuid))
             return (Right member)
         list :: ListHandler (ReaderT ClubUuid App)
         list = mkListing jsonO $ \_ -> lift $ do
             uuid <- ask
             lift $ runSql $ do
-                pool <- ask
-                members <- runSqlPool (selectList [MemberClubUuid ==. uuid] [Asc MemberName]) pool
+                members <- runQuery (selectList [MemberClubUuid ==. uuid] [Asc MemberName])
                 return (map entityVal members)
         remove :: Handler (ReaderT MemberUuid (ReaderT ClubUuid App))
         remove = mkIdHandler jsonO $ \_ uuid -> ExceptT $ do
             lift $ lift $ runSql $ do
-                pool <- ask
-                flip runSqlPool pool $ do
+                runQuery $ do
                     deleteWhere [MemberClubUuid ==. uuid]
                     deleteWhere [TrainingPhaseClubUuid ==. uuid]
                     deleteWhere [TeamClubUuid ==. uuid]
@@ -171,10 +179,8 @@ router = root -/ route clubsR
         update = mkInputHandler (jsonI . jsonO) $ \publishMember -> ExceptT $ do
             uuid <- ask
             lift $ lift $ runSql $ do
-                pool <- ask
-                runSqlPool (Database.Persist.update (MemberKey uuid) [ MemberName =. publishMemberName publishMember
-                                                                     , MemberTeamUuid =. publishMemberTeamUuid publishMember]) pool
-                member <- runSqlPool (Database.Persist.get (MemberKey uuid)) pool
+                runQuery (Database.Persist.update (MemberKey uuid) [ MemberName =. publishMemberName publishMember, MemberTeamUuid =. publishMemberTeamUuid publishMember])
+                member <- runQuery (Database.Persist.get (MemberKey uuid))
                 return $ Right member
     clubsTeamsR :: Resource (ReaderT ClubUuid App) (ReaderT TeamUuid (ReaderT ClubUuid App)) TeamUuid () Void
     clubsTeamsR = mkResourceReader { R.create = Just create
@@ -186,85 +192,68 @@ router = root -/ route clubsR
                                    , R.update = Just update }
       where
         create :: Handler (ReaderT ClubUuid App)
-        create = mkInputHandler (jsonI . jsonO) $ \publishTeam -> ExceptT $ do
+        create = mkInputHandler (jsonI . jsonO . jsonE) $ \publishTeam -> ExceptT $ do
             clubUuid <- ask
-            lift $ runSql $ do
-                uuid <- lift nextRandom
-                let team = Team uuid (publishTeamName publishTeam) clubUuid
-                pool <- ask
-                runSqlPool (insert team) pool
-                return $ Right team
+            uuid <- liftIO nextRandom
+            let team = Team uuid (publishTeamName publishTeam) clubUuid
+            lift $ runSql $ conflictInsert team
         get :: Handler (ReaderT TeamUuid (ReaderT ClubUuid App))
         get = mkIdHandler jsonO $ \_ uuid -> ExceptT $ do
-            Just team <- lift $ lift $ runSql $ do
-                pool <- ask
-                runSqlPool (Database.Persist.get (TeamKey uuid)) pool
+            Just team <- lift $ lift $ runSql $ runQuery (Database.Persist.get (TeamKey uuid))
             return (Right team)
         list :: ListHandler (ReaderT ClubUuid App)
         list = mkListing jsonO $ \_ -> lift $ do
             uuid <- ask
             lift $ runSql $ do
-                pool <- ask
-                teams <- runSqlPool (selectList [TeamClubUuid ==. uuid] [Asc TeamName]) pool
+                teams <- runQuery (selectList [TeamClubUuid ==. uuid] [Asc TeamName])
                 return (map entityVal teams)
         remove :: Handler (ReaderT TeamUuid (ReaderT ClubUuid App))
         remove = mkIdHandler jsonO $ \_ uuid -> ExceptT $ do
-            lift $ lift $ runSql $ do
-                pool <- ask
-                runSqlPool (delete (TeamKey uuid)) pool
+            lift $ lift $ runSql $ runQuery (delete (TeamKey uuid))
             return (Right ())
         update :: Handler (ReaderT TeamUuid (ReaderT ClubUuid App))
         update = mkInputHandler (jsonI . jsonO) $ \publishTeam -> ExceptT $ do
             uuid <- ask
             lift $ lift $ runSql $ do
-                pool <- ask
-                runSqlPool (Database.Persist.update (TeamKey uuid) [TeamName =. publishTeamName publishTeam]) pool
-                team <- runSqlPool (Database.Persist.get (TeamKey uuid)) pool
+                runQuery (Database.Persist.update (TeamKey uuid) [TeamName =. publishTeamName publishTeam])
+                team <- runQuery (Database.Persist.get (TeamKey uuid))
                 return $ Right team
     clubsTrainingPhasesR :: Resource (ReaderT ClubUuid App) (ReaderT TrainingPhaseUuid (ReaderT ClubUuid App)) TrainingPhaseUuid () Void
     clubsTrainingPhasesR = mkResourceReader { R.create = Just create
-                                   , R.get = Just get
-                                   , R.list = const list
-                                   , R.name = "training-phases"
-                                   , R.remove = Just remove
-                                   , R.schema = withListing () (unnamedSingleRead id)
-                                   , R.update = Just update }
+                                            , R.get = Just get
+                                            , R.list = const list
+                                            , R.name = "training-phases"
+                                            , R.remove = Just remove
+                                            , R.schema = withListing () (unnamedSingleRead id)
+                                            , R.update = Just update }
       where
         create :: Handler (ReaderT ClubUuid App)
-        create = mkInputHandler (jsonI . jsonO) $ \publishTrainingPhase -> ExceptT $ do
+        create = mkInputHandler (jsonI . jsonO . jsonE) $ \publishTrainingPhase -> ExceptT $ do
             clubUuid <- ask
+            uuid <- liftIO nextRandom
             lift $ runSql $ do
-                uuid <- lift nextRandom
                 let trainingPhase = TrainingPhase uuid (publishTrainingPhaseName publishTrainingPhase) clubUuid
-                pool <- ask
-                runSqlPool (insert trainingPhase) pool
-                return $ Right trainingPhase
+                conflictInsert trainingPhase
         get :: Handler (ReaderT TrainingPhaseUuid (ReaderT ClubUuid App))
         get = mkIdHandler jsonO $ \_ uuid -> ExceptT $ do
-            Just trainingPhase <- lift $ lift $ runSql $ do
-                pool <- ask
-                runSqlPool (Database.Persist.get (TrainingPhaseKey uuid)) pool
+            Just trainingPhase <- lift $ lift $ runSql $ runQuery (Database.Persist.get (TrainingPhaseKey uuid))
             return (Right trainingPhase)
         list :: ListHandler (ReaderT ClubUuid App)
         list = mkListing jsonO $ \_ -> lift $ do
             uuid <- ask
             lift $ runSql $ do
-                pool <- ask
-                trainingPhases <- runSqlPool (selectList [TrainingPhaseClubUuid ==. uuid] [Asc TrainingPhaseName]) pool
+                trainingPhases <- runQuery (selectList [TrainingPhaseClubUuid ==. uuid] [Asc TrainingPhaseName])
                 return (map entityVal trainingPhases)
         remove :: Handler (ReaderT TrainingPhaseUuid (ReaderT ClubUuid App))
         remove = mkIdHandler jsonO $ \_ uuid -> ExceptT $ do
-            lift $ lift $ runSql $ do
-                pool <- ask
-                runSqlPool (delete (TrainingPhaseKey uuid)) pool
+            lift $ lift $ runSql $ runQuery (delete (TrainingPhaseKey uuid))
             return (Right ())
         update :: Handler (ReaderT TrainingPhaseUuid (ReaderT ClubUuid App))
         update = mkInputHandler (jsonI . jsonO) $ \publishTrainingPhase -> ExceptT $ do
             uuid <- ask
             lift $ lift $ runSql $ do
-                pool <- ask
-                runSqlPool (Database.Persist.update (TrainingPhaseKey uuid) [TrainingPhaseName =. publishTrainingPhaseName publishTrainingPhase]) pool
-                trainingPhases <- runSqlPool (Database.Persist.get (TrainingPhaseKey uuid)) pool
+                runQuery (Database.Persist.update (TrainingPhaseKey uuid) [TrainingPhaseName =. publishTrainingPhaseName publishTrainingPhase])
+                trainingPhases <- runQuery (Database.Persist.get (TrainingPhaseKey uuid))
                 return $ Right trainingPhases
     clubCompositeR :: Resource App (ReaderT UUID App) UUID Void Void
     clubCompositeR = mkResourceReader { R.get = Just get
@@ -273,11 +262,10 @@ router = root -/ route clubsR
       where
         get :: Handler (ReaderT UUID App)
         get = mkIdHandler jsonO $ \_ uuid -> ExceptT $ lift $ runSql $ do
-            pool <- ask
-            Just club <- runSqlPool (Database.Persist.get (ClubKey uuid)) pool
-            members <- runSqlPool (selectList [] [Asc MemberName]) pool
-            teams <- runSqlPool (selectList [] [Asc TeamName]) pool
-            trainingPhases <- runSqlPool (selectList [] [Asc TrainingPhaseName]) pool
+            Just club <- runQuery (Database.Persist.get (ClubKey uuid))
+            members <- runQuery (selectList [] [Asc MemberName])
+            teams <- runQuery (selectList [] [Asc TeamName])
+            trainingPhases <- runQuery (selectList [] [Asc TrainingPhaseName])
             let clubComposite = ClubComposite (clubName club) (map entityVal members) (map entityVal teams) (map entityVal trainingPhases)
             return (Right clubComposite)
 

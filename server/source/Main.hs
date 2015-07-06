@@ -43,6 +43,19 @@ import qualified Rest.Resource as R
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] $(persistFileWith lowerCaseSettings "schema")
 
+data TeamWithMembers = TeamWithMembers { teamWithMembersUuid :: UUID
+                                       , teamWithMembersName :: Text
+                                       , teamWithMembersClubUuid :: UUID
+                                       , teamWithMembersMemberUuids :: [UUID]
+                                       }
+
+instance ToJSON TeamWithMembers where
+    toJSON (TeamWithMembers uuid name clubUuid memberUuids) =
+        object [ "uuid" .= uuid
+               , "name" .= name
+               , "clubUuid" .= clubUuid
+               , "members" .= memberUuids ]
+
 mkGenericJSON [t|Club|]
 mkGenericJSON [t|Member|]
 mkGenericJSON [t|Team|]
@@ -81,10 +94,24 @@ type VideoUuid = UUID
 
 data ClubComposite = ClubComposite { clubCompositeName :: Text
                                    , clubCompositeMembers :: [Member]
-                                   , clubCompositeTeams :: [Team]
+                                   , clubCompositeTeams :: [TeamWithMembers]
                                    , clubCompositeTrainingPhases :: [TrainingPhase] }
 
-mkGenericJSON [t|ClubComposite|]
+-- mkGenericJSON [t|ClubComposite|]
+
+instance ToJSON ClubComposite where
+    toJSON (ClubComposite name members teams trainingPhases) =
+        object [ "name" .= name
+               , "members" .= members
+               , "teams" .= teams
+               , "trainingPhases" .= trainingPhases ]
+
+instance Schema.JSONSchema ClubComposite where
+    schema _ = Schema.Object [ Schema.Field "name" True Schema.Any -- TODO
+                             , Schema.Field "members" True Schema.Any -- TODO
+                             , Schema.Field "teams" True Schema.Any -- TODO
+                             , Schema.Field "trainingPhases" True Schema.Any -- TODO
+                             ]
 
 data AppError = Conflict deriving Typeable
 
@@ -305,7 +332,11 @@ router = root -/ route clubsR
             members <- runQuery (selectList [] [Asc MemberName])
             teams <- runQuery (selectList [] [Asc TeamName])
             trainingPhases <- runQuery (selectList [] [Asc TrainingPhaseName])
-            let clubComposite = ClubComposite (clubName club) (map entityVal members) (map entityVal teams) (map entityVal trainingPhases)
+            teamWithMembers <- flip mapM teams $ \teamEntity -> do
+                let team = entityVal teamEntity
+                members <- runQuery (selectList [MemberTeamUuid ==. Just (teamUuid team)] [Asc MemberName])
+                return (teamWithMembers team (map entityVal members))
+            let clubComposite = ClubComposite (clubName club) (map entityVal members) teamWithMembers (map entityVal trainingPhases)
             return (Right clubComposite)
 
 api :: Api App
@@ -326,3 +357,10 @@ uploadThread pool = forever $ do
             let Video uuid _ _ = entityVal uploadEntity
             liftIO (copyFile ("upload/" ++ (toString uuid)) ("videos/" ++ (toString uuid)))
             runQuery (Database.Persist.update (entityKey uploadEntity) [VideoSuccess =. Just True])
+
+teamWithMembers :: Team -> [Member] -> TeamWithMembers
+teamWithMembers (Team { teamUuid = uuid
+                      , teamName = name
+                      , teamClubUuid = clubUuid
+                      }) members = TeamWithMembers uuid name clubUuid
+                                       (map memberUuid members)

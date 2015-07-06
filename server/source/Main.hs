@@ -295,16 +295,23 @@ router = root -/ route clubsR
                 runQuery (Database.Persist.update (TrainingPhaseKey uuid) [TrainingPhaseName =. publishTrainingPhaseName publishTrainingPhase])
                 trainingPhases <- runQuery (Database.Persist.get (TrainingPhaseKey uuid))
                 return $ Right trainingPhases
-    clubsVideosR :: Resource (ReaderT ClubUuid App) (ReaderT VideoUuid (ReaderT ClubUuid App)) VideoUuid Void Void
+    clubsVideosR :: Resource (ReaderT ClubUuid App) (ReaderT VideoUuid (ReaderT ClubUuid App)) VideoUuid () Void
     clubsVideosR = mkResourceReader { R.get = Just get
+                                    , R.list = const list
                                     , R.name = "videos"
-                                    , R.schema = noListing (unnamedSingleRead id)
+                                    , R.schema = withListing () (unnamedSingleRead id)
                                     }
       where
         get :: Handler (ReaderT VideoUuid (ReaderT ClubUuid App))
         get = mkIdHandler fileO $ \() uuid -> ExceptT $ do
             file <- liftIO $ BL.readFile ("videos/" ++ (toString uuid))
             return (Right (file, "", False)) -- TODO
+        list :: ListHandler (ReaderT ClubUuid App)
+        list = mkListing jsonO $ \_ -> lift $ do
+            uuid <- ask
+            lift $ runSql $ do
+                videos <- runQuery (selectList [VideoSuccess ==. Just True, VideoClubUuid ==. uuid] [Desc VideoCreated])
+                return (map (videoUuid . entityVal) videos)
     clubsUploadR :: Resource (ReaderT ClubUuid App) (ReaderT VideoUuid (ReaderT ClubUuid App)) VideoUuid Void Void
     clubsUploadR = mkResourceReader { R.create = Just create
                                     , R.get = Just get

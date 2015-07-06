@@ -29,6 +29,7 @@ executable coachassistant-server
                     rest-core,
                     rest-wai,
                     text,
+                    time,
                     transformers,
                     uuid,
                     warp

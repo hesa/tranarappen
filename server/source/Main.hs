@@ -19,6 +19,7 @@ import Control.Monad.IO.Class
 import Control.Monad.Reader
 import Data.Aeson
 import Data.Default
+import Data.Time.Clock
 import Data.Typeable
 import Data.UUID
 import Data.UUID.V4
@@ -45,14 +46,16 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] $(persistFileWith lowerCas
 
 data TeamWithMembers = TeamWithMembers { teamWithMembersUuid :: UUID
                                        , teamWithMembersName :: Text
+                                       , teamWithMembersCreated :: UTCTime
                                        , teamWithMembersClubUuid :: UUID
                                        , teamWithMembersMemberUuids :: [UUID]
                                        }
 
 instance ToJSON TeamWithMembers where
-    toJSON (TeamWithMembers uuid name clubUuid memberUuids) =
+    toJSON (TeamWithMembers uuid name created clubUuid memberUuids) =
         object [ "uuid" .= uuid
                , "name" .= name
+               , "created" .= created
                , "clubUuid" .= clubUuid
                , "members" .= memberUuids ]
 
@@ -61,10 +64,10 @@ mkGenericJSON [t|Member|]
 mkGenericJSON [t|Team|]
 mkGenericJSON [t|TrainingPhase|]
 
-mkJsonType ''Club def { derivedPrefix = "publish", removeFields = ["uuid"] }
-mkJsonType ''Member def { derivedPrefix = "publish", removeFields = ["clubUuid", "uuid"] }
-mkJsonType ''Team def { derivedPrefix = "publish", removeFields = ["clubUuid", "uuid"] }
-mkJsonType ''TrainingPhase def { derivedPrefix = "publish", removeFields = ["clubUuid", "uuid"] }
+mkJsonType ''Club def { derivedPrefix = "publish", removeFields = ["created", "uuid"] }
+mkJsonType ''Member def { derivedPrefix = "publish", removeFields = ["clubUuid", "created", "uuid"] }
+mkJsonType ''Team def { derivedPrefix = "publish", removeFields = ["clubUuid", "created", "uuid"] }
+mkJsonType ''TrainingPhase def { derivedPrefix = "publish", removeFields = ["clubUuid", "created", "uuid"] }
 
 newtype App a = App { unApi :: ReaderT ConnectionPool IO a } deriving (Applicative, Functor, Monad, E.MonadCatch, MonadIO, E.MonadThrow)
 
@@ -152,7 +155,8 @@ router = root -/ route clubsR
         create :: Handler App
         create = mkInputHandler (jsonI . jsonO . jsonE) $ \publishClub -> do
             uuid <- liftIO nextRandom
-            let club = Club uuid (publishClubName publishClub)
+            now <- liftIO getCurrentTime
+            let club = Club uuid (publishClubName publishClub) now
             ExceptT $ runSql $ conflictInsert club
         get :: Handler (ReaderT ClubUuid App)
         get = mkIdHandler jsonO $ \_ uuid -> ExceptT $ do
@@ -186,7 +190,8 @@ router = root -/ route clubsR
         create = mkInputHandler (jsonI . jsonO) $ \publishMember -> ExceptT $ do
             clubUuid <- ask
             uuid <- liftIO nextRandom
-            let member = Member uuid (publishMemberName publishMember) clubUuid (publishMemberTeamUuid publishMember)
+            now <- liftIO getCurrentTime
+            let member = Member uuid (publishMemberName publishMember) now clubUuid (publishMemberTeamUuid publishMember)
             lift $ runSql $ runQuery (insert member)
             return (Right member)
         get :: Handler (ReaderT MemberUuid (ReaderT ClubUuid App))
@@ -228,7 +233,8 @@ router = root -/ route clubsR
         create = mkInputHandler (jsonI . jsonO . jsonE) $ \publishTeam -> ExceptT $ do
             clubUuid <- ask
             uuid <- liftIO nextRandom
-            let team = Team uuid (publishTeamName publishTeam) clubUuid
+            now <- liftIO getCurrentTime
+            let team = Team uuid (publishTeamName publishTeam) now clubUuid
             lift $ runSql $ conflictInsert team
         get :: Handler (ReaderT TeamUuid (ReaderT ClubUuid App))
         get = mkIdHandler jsonO $ \_ uuid -> ExceptT $ do
@@ -264,8 +270,9 @@ router = root -/ route clubsR
         create = mkInputHandler (jsonI . jsonO . jsonE) $ \publishTrainingPhase -> ExceptT $ do
             clubUuid <- ask
             uuid <- liftIO nextRandom
+            now <- liftIO getCurrentTime
             lift $ runSql $ do
-                let trainingPhase = TrainingPhase uuid (publishTrainingPhaseName publishTrainingPhase) clubUuid
+                let trainingPhase = TrainingPhase uuid (publishTrainingPhaseName publishTrainingPhase) now clubUuid
                 conflictInsert trainingPhase
         get :: Handler (ReaderT TrainingPhaseUuid (ReaderT ClubUuid App))
         get = mkIdHandler jsonO $ \_ uuid -> ExceptT $ do
@@ -309,7 +316,8 @@ router = root -/ route clubsR
         create = mkInputHandler (fileI . stringO) $ \video -> ExceptT $ do
             clubUuid <- ask
             uuid <- liftIO nextRandom
-            let upload = Video uuid Nothing clubUuid
+            now <- liftIO getCurrentTime
+            let upload = Video uuid Nothing now clubUuid
             liftIO $ BL.writeFile ("upload/" ++ toString uuid) video
             lift $ runSql $ runQuery $ insert upload
             return (Right (toString uuid))
@@ -354,13 +362,14 @@ uploadThread pool = forever $ do
     flip runReaderT pool $ do
         uploads <- runQuery (selectList [VideoSuccess ==. Nothing] [])
         flip mapM_ uploads $ \uploadEntity -> do
-            let Video uuid _ _ = entityVal uploadEntity
+            let Video uuid _ _ _ = entityVal uploadEntity
             liftIO (copyFile ("upload/" ++ (toString uuid)) ("videos/" ++ (toString uuid)))
             runQuery (Database.Persist.update (entityKey uploadEntity) [VideoSuccess =. Just True])
 
 teamWithMembers :: Team -> [Member] -> TeamWithMembers
 teamWithMembers (Team { teamUuid = uuid
                       , teamName = name
+                      , teamCreated = created
                       , teamClubUuid = clubUuid
-                      }) members = TeamWithMembers uuid name clubUuid
+                      }) members = TeamWithMembers uuid name created clubUuid
                                        (map memberUuid members)

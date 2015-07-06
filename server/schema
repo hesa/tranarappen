@@ -1,11 +1,13 @@
 Club
     uuid UUID
     name Text
+    created UTCTime default=now()
     Primary uuid
     UniqueClubName name
 Member
     uuid UUID
     name Text
+    created UTCTime default=now()
     clubUuid UUID
     teamUuid UUID Maybe
     Primary uuid
@@ -13,6 +15,7 @@ Member
 Team
     uuid UUID
     name Text
+    created UTCTime default=now()
     clubUuid UUID
     Primary uuid
     Foreign Club clubUuidKey clubUuid
@@ -20,6 +23,7 @@ Team
 TrainingPhase
     uuid UUID
     name Text
+    created UTCTime default=now()
     clubUuid UUID
     Primary uuid
     Foreign Club clubUuidKey clubUuid
@@ -27,6 +31,7 @@ TrainingPhase
 Video
     uuid UUID
     success Bool Maybe
+    created UTCTime default=now()
     clubUuid UUID
     Primary uuid
     Foreign Club clubUuidKey clubUuid

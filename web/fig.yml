@@ -1,0 +1,23 @@
+web:
+  build: .
+  links:
+  - server
+  ports:
+  - "443:443"
+  volumes:
+  - ./app:/usr/share/nginx/html:ro
+database:
+  environment:
+    POSTGRES_USER: lambdatrade
+    POSTGRES_PASSWORD: GoiCJTC4tbt4
+  image: postgres:9.4.0
+  ports:
+  - "5432:5432"
+server:
+  environment:
+    DB_PASSWORD: GoiCJTC4tbt4
+  image: coachassistant-server
+  links:
+  - database
+  ports:
+  - "3000:3000"

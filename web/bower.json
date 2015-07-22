@@ -1,0 +1,19 @@
+{
+    "name": "coachassistant",
+    "version": "0.0.0.0",
+    "moduleType": [
+        "globals"
+    ],
+    "private": true,
+    "main": "Gruntfile.js",
+    "ignore": [
+        "node_modules/",
+        "bower_components/"
+    ],
+    "dependencies": {
+        "angular": "*",
+        "angular-bootstrap": "*",
+        "angular-ui-router": "*",
+        "bootstrap-css-only": "*"
+    }
+}

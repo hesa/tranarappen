@@ -1,0 +1,28 @@
+<div id="clubs">
+  <div class="page-header"><h1>Clubs</h1></div>
+  <div class="page-header"><h2>View and select</h2></div>
+  <p ng-show="clubs.clubs.length === 0">No clubs have been added yet.</p>
+  <p ng-show="clubs.clubs.length !== 0 && !clubs.selectedClub"><alert type="warning">Please select a club.</alert></p>
+  <div class="list-group" ng-show="clubs.clubsChunks.length !== 0" style="padding-left: 10px; padding-right: 10px;">
+    <div class="row" ng-repeat="row in clubs.clubsChunks">
+      <div class="col-md-3" ng-repeat="item in row" style="padding: 0px;">
+        <div style="padding: 5px;">
+          <a class="list-group-item" ng-class="{ 'active': clubs.selectedClub.uuid === item.uuid }" ng-click="clubs.setClub(item)">{{item.name}}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="page-header"><h2>Add</h2></div>
+  <p ng-show="clubs.clubs.length === 0 && !clubs.selectedClub"><alert type="warning">Please create a club.</alert></p>
+  <form class="form-horizontal" name="addClubForm" ng-submit="clubs.addClub(addClubForm)">
+    <div class="form-group row">
+      <label class="col-md-2 control-label" for="addClubName">Club name</label>
+      <div class="col-md-3">
+        <input class="form-control" name="addClubName" ng-model="clubs.addClubModel.addClubName" type="text" id="addClubName" required ui-validate="{ notUniqueError : clubs.notUnique }" />
+      </div>
+      <div class="col-md-7">
+        <button class="btn btn-primary" type="submit">Add</button>
+      </div>
+    </div>
+  </form>
+</div>

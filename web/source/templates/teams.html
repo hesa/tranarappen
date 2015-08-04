@@ -1,0 +1,31 @@
+<div id="teams">
+  <div class="page-header"><h1>Teams</h1></div>
+  <div class="page-header"><h2>View</h2></div>
+  <p ng-show="teams.teams.length === 0">No teams have been added yet.</p>
+  <table class="table table-hover" ng-show="teams.teams.length > 0" style="white-space: nowrap;">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Added</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-click="teams.viewTeam(team)" ng-repeat="team in teams.teams" style="cursor: pointer;">
+        <td>{{team.name}}</td>
+        <td style="width: 40%;">{{team.created | date: 'yyyy-MM-dd HH:mm'}}</td>
+      </tr>
+    </body>
+  </table>
+  <div class="page-header"><h2>Add</h2></div>
+  <form class="form-horizontal" name="addTeamForm" ng-submit="teams.addTeam(addTeamForm)">
+    <div class="form-group row">
+      <label class="col-md-2 control-label" for="addTeamName">Team name</label>
+      <div class="col-md-3">
+        <input class="form-control" name="addTeamName" ng-model="teams.addTeamModel.addTeamName" type="text" id="addTeamName" required ui-validate="{ notUniqueError : teams.notUnique }" />
+      </div>
+      <div class="col-md-7">
+        <button class="btn btn-primary" type="submit">Add</button>
+      </div>
+    </div>
+  </form>
+</div>

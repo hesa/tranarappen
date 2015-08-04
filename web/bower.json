@@ -1,19 +1,22 @@
 {
-    "name": "coachassistant",
-    "version": "0.0.0.0",
-    "moduleType": [
-        "globals"
-    ],
-    "private": true,
-    "main": "Gruntfile.js",
+    "dependencies": {
+        "angular": "1.x",
+        "angular-auto-validate": "1.*",
+        "angular-bootstrap": "*",
+        "angular-ui-router": "*",
+        "bootstrap-css-only": "*",
+        "nya-bootstrap-select": "~2.0.10",
+        "angular-ui-validate": "~1.1.1"
+    },
     "ignore": [
         "node_modules/",
         "bower_components/"
     ],
-    "dependencies": {
-        "angular": "*",
-        "angular-bootstrap": "*",
-        "angular-ui-router": "*",
-        "bootstrap-css-only": "*"
-    }
+    "main": "Gruntfile.js",
+    "moduleType": [
+        "globals"
+    ],
+    "name": "coachassistant",
+    "private": true,
+    "version": "0.0.0.0"
 }

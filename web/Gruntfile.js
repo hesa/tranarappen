@@ -1,5 +1,5 @@
 module.exports = function (grunt) {
-    "use strict";
+    'use strict';
 
     grunt.loadNpmTasks('grunt-bower-concat');
     grunt.loadNpmTasks('grunt-contrib-concat');
@@ -17,16 +17,36 @@ module.exports = function (grunt) {
         concat: {
             script: {
                 dest: 'app/script.js',
-                src: ['source/script.js']
+                src: ['lambdatrade.js', 'source/script.js']
             }
         },
         copy: {
             main: {
                 files: [{
+                    cwd: 'bower_components/bootstrap-css-only',
+                    dest: 'app',
+                    expand: true,
+                    src: 'fonts/*'
+                }, {
+                    cwd: 'bower_components/bootstrap-css-only/css',
+                    dest: 'app',
+                    expand: true,
+                    src: 'bootstrap.css.map'
+                }, {
                     cwd: 'source',
                     dest: 'app',
                     expand: true,
                     src: 'index.html'
+                }, {
+                    cwd: 'source',
+                    dest: 'app',
+                    expand: true,
+                    src: 'style.css'
+                }, {
+                    cwd: 'source/templates',
+                    dest: 'app/templates',
+                    expand: true,
+                    src: '*.html'
                 }]
             }
         },
@@ -34,7 +54,7 @@ module.exports = function (grunt) {
             main: {
                 directives: {
                     browser: true,
-                    predef: ['module']
+                    predef: ['angular', 'console', 'LambdatradeCommon', 'module']
                 },
                 src: ['Gruntfile.js', 'source/**/*.js']
             }

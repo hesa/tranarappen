@@ -31,15 +31,16 @@ Install Node.js:
 
 Install the grunt-cli and jslint packages:
 
-    $ sudo npm -g install grunt-cli jslint
+    $ sudo npm -g install bower grunt-cli jslint
 
 Install the Node.js dependencies for the project.
 
     $ npm install
 
-Install the Bower dependencies for the project.
+Install the Bower dependencies for the project, and package the dependencies.
 
     $ bower install
+    $ grunt deps
 
 Initiate the "dev" Grunt target.
 

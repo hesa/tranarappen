@@ -1,0 +1,31 @@
+<div id="training-phases">
+  <div class="page-header"><h1>Training phases</h1></div>
+  <div class="page-header"><h2>View</h2></div>
+  <p ng-show="trainingPhases.trainingPhases.length === 0">No training phases have been added yet.</p>
+  <table class="table table-hover" ng-show="trainingPhases.trainingPhases.length > 0" style="white-space: nowrap;">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Added</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-click="trainingPhases.viewTrainingPhase(trainingPhase)" ng-repeat="trainingPhase in trainingPhases.trainingPhases" style="cursor: pointer;">
+        <td>{{trainingPhase.name}}</td>
+        <td style="width: 40%;">{{trainingPhase.created | date: 'yyyy-MM-dd HH:mm'}}</td>
+      </tr>
+    </body>
+  </table>
+  <div class="page-header"><h2>Add</h2></div>
+  <form class="form-horizontal" name="addTrainingPhaseForm" ng-submit="trainingPhases.addTrainingPhase(addTrainingPhaseForm)">
+    <div class="form-group row">
+      <label class="col-md-2 control-label" for="addTrainingPhaseName">Training phase name</label>
+      <div class="col-md-3">
+        <input class="form-control" name="addTrainingPhaseName" ng-model="trainingPhases.addTrainingPhaseModel.addTrainingPhaseName" type="text" id="addTrainingPhaseName" required ui-validate="{ notUniqueError : trainingPhases.notUnique }" />
+      </div>
+      <div class="col-md-7">
+        <button class="btn btn-primary" type="submit">Add</button>
+      </div>
+    </div>
+  </form>
+</div>

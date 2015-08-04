@@ -1,0 +1,24 @@
+<div id="member">
+  <div class="modal-header">
+    <h4 class="modal-title">Member: {{member.member.name}}</h4>
+  </div>
+  <div class="modal-body">
+    <form name="updateMemberForm" ng-submit="member.update()">
+      <div class="form-group" style="padding: 0px 6px;">
+        <label class="control-label" for="updateMemberName">Member name</label>
+        <input class="form-control" name="updateMemberName" ng-model="member.updateMemberModel.updateMemberName" type="text" id="updateMemberName" required />
+      </div>
+      <div class="form-group" style="padding: 0px 6px;">
+        <ol class="nya-bs-select" ng-model="member.updateMemberModel.updateMemberTeam" style="width: 100%;" title="None">
+          <li nya-bs-option="team in member.teams">
+            <a>{{team.name}}</a>
+          </li>
+        </ol>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-warning" ng-click="member.cancel()" type="button">Cancel</button>
+    <button class="btn btn-primary" ng-click="member.update()" type="button">Update</button>
+  </div>
+</div>

@@ -1,0 +1,17 @@
+<div id="training-phase">
+  <div class="modal-header">
+    <h4 class="modal-title">Training phase: {{trainingPhase.trainingPhase.name}}</h4>
+  </div>
+  <div class="modal-body">
+    <form name="updateTrainingPhaseForm" ng-submit="trainingPhase.update()">
+      <div class="form-group" style="padding: 0px 6px;">
+        <label class="control-label" for="updateTrainingPhaseName">Training phase name</label>
+        <input class="form-control" name="updateTrainingPhaseName" ng-model="trainingPhase.updateTrainingPhaseModel.updateTrainingPhaseName" type="text" id="updateTrainingPhaseName" required />
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-warning" ng-click="trainingPhase.cancel()" type="button">Cancel</button>
+    <button class="btn btn-primary" ng-click="trainingPhase.update()" type="button">Update</button>
+  </div>
+</div>

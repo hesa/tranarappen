@@ -27,7 +27,7 @@ Start the services according to the instructions in the previous section.
 
 Install Node.js:
 
-    $ sudo apt-get install --yes nodejs
+    $ sudo apt-get install --yes nodejs nodejs-legacy
 
 Install the grunt-cli and jslint packages:
 

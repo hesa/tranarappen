@@ -27,22 +27,22 @@ get_club_ids() {
 }
 
 add_club() {
-    curl --data "{ \"name\": \"$1\" }" --header "Content-Type: application/json" --request POST localhost:3000/0.0.0/clubs 2>/dev/null| sed 's/\"//g'
+    curl --data "{ \"name\": \"$1\" }" --header "Content-Type: application/json" --request POST $URLBASE/clubs 2>/dev/null| sed 's/\"//g'
 }
 
 #
 # TEAM
 #
 get_team_id() {
-    curl --request GET localhost:3000/0.0.0/clubs/$CLUBID/teams 2>/dev/null | jshon | grep -B 3 "$TEAM" | grep uuid  | awk '{print $2}' | sed 's/,//g'| sed 's/\"//g'
+    curl --request GET $URLBASE/clubs/$CLUBID/teams 2>/dev/null | jshon | grep -B 3 "$TEAM" | grep uuid  | awk '{print $2}' | sed 's/,//g'| sed 's/\"//g'
 }
 
 get_team_ids() {
-    curl --request GET localhost:3000/0.0.0/clubs/$CLUBID/teams 2>/dev/null | jshon | grep uuid  | awk '{print $2}' | sed 's/,//g'| sed 's/\"//g'
+    curl --request GET $URLBASE/clubs/$CLUBID/teams 2>/dev/null | jshon | grep uuid  | awk '{print $2}' | sed 's/,//g'| sed 's/\"//g'
 }
 
 add_team() {
-    curl --data "{ \"name\": \"$2\" }" --header "Content-Type: application/json" --request POST localhost:3000/0.0.0/clubs/$CLUBID/teams 2>/dev/null
+    curl --data "{ \"name\": \"$2\" }" --header "Content-Type: application/json" --request POST $URLBASE/clubs/$CLUBID/teams 2>/dev/null
 }
 
 
@@ -50,16 +50,16 @@ add_team() {
 # MEMBER
 #
 get_member_id() {
-    curl --request GET localhost:3000/0.0.0/clubs/$CLUBID/members 2>/dev/null | jshon | grep -B 3 "$MEMBER" | grep uuid  | awk '{print $2}' | sed 's/,//g'| sed 's/\"//g'
+    curl --request GET $URLBASE/clubs/$CLUBID/members 2>/dev/null | jshon | grep -B 3 "$MEMBER" | grep uuid  | awk '{print $2}' | sed 's/,//g'| sed 's/\"//g'
 }
 
 get_member_ids() {
-    curl --request GET localhost:3000/0.0.0/clubs/$CLUBID/members 2>/dev/null | jshon | grep uuid  | awk '{print $2}' | sed 's/,//g'| sed 's/\"//g'
+    curl --request GET $URLBASE/clubs/$CLUBID/members 2>/dev/null | jshon | grep uuid  | awk '{print $2}' | sed 's/,//g'| sed 's/\"//g'
 }
 
 add_member() {
-    echo curl --data "{ \"name\": \"$1\", \"teamUuid\": \"$TEAMID\" }" --header "Content-Type: application/json" --request POST localhost:3000/0.0.0/clubs/$CLUBID/members
-    curl --data "{ \"name\": \"$1\", \"teamUuid\": \"$TEAMID\" }" --header "Content-Type: application/json" --request POST localhost:3000/0.0.0/clubs/$CLUBID/members
+    echo curl --data "{ \"name\": \"$1\", \"teamUuid\": \"$TEAMID\" }" --header "Content-Type: application/json" --request POST $URLBASE/clubs/$CLUBID/members
+    curl --data "{ \"name\": \"$1\", \"teamUuid\": \"$TEAMID\" }" --header "Content-Type: application/json" --request POST $URLBASE/clubs/$CLUBID/members
 }
 
 
@@ -150,11 +150,11 @@ clean_web() {
 	    for member in $(get_member_ids)
 	    do
 		echo "C: $club  T: $team ---> $member"
-		curl --request DELETE localhost:3000/0.0.0/clubs/$CLUBID/members/$member
+		curl --request DELETE $URLBASE/clubs/$CLUBID/members/$member
 	    done
-	    curl --request DELETE localhost:3000/0.0.0/clubs/$CLUBID/teams/$team
+	    curl --request DELETE $URLBASE/clubs/$CLUBID/teams/$team
 	done
-	curl --request DELETE localhost:3000/0.0.0/clubs/$CLUBID
+	curl --request DELETE $URLBASE/clubs/$CLUBID
     done
 }
 

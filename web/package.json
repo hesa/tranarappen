@@ -10,5 +10,9 @@
     },
     "license": "BSD3",
     "name": "coachassistant",
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:hesa/coachassistant.git"
+    },
     "version": "0.0.0"
 }

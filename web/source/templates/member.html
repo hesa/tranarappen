@@ -8,7 +8,7 @@
         <label class="control-label" for="updateMemberName">Member name</label>
         <input class="form-control" name="updateMemberName" ng-model="member.updateMemberModel.updateMemberName" type="text" id="updateMemberName" required />
       </div>
-      <div class="form-group" style="padding: 0px 6px;">
+      <div class="form-group" ng-show="member.teams.length > 0" style="padding: 0px 6px;">
         <ol class="nya-bs-select" ng-model="member.updateMemberModel.updateMemberTeam" style="width: 100%;" title="None">
           <li nya-bs-option="team in member.teams">
             <a>{{team.name}}</a>
@@ -16,6 +16,15 @@
         </ol>
       </div>
     </form>
+    <!-- TODO: Should not use form group here, probably. -->
+    <div class="form-group" ng-show="member.videos.length > 0" style="padding: 0px 6px;">
+      <label class="control-label">Videos</label>
+      <ol>
+	<li ng-repeat="video in member.videos">
+          <a ng-click="member.cancel()" ui-sref="videos({ uuid: video.uuid })">{{video.published | date: "yyyy-MM-dd HH:mm"}}</a>
+	</li>
+      </ol>
+    </div>
   </div>
   <div class="modal-footer">
     <button class="btn btn-warning" ng-click="member.cancel()" type="button">Cancel</button>

@@ -23,7 +23,7 @@
       <div class="col-md-3">
         <input class="form-control" name="addMemberName" ng-model="members.addMemberModel.addMemberName" type="text" id="addMemberName" required ui-validate="{ notUniqueError : members.notUnique }" />
       </div>
-      <div class="col-md-3">
+      <div class="col-md-3" ng-show="members.teams.length > 0">
         <ol class="nya-bs-select" ng-model="members.addMemberModel.addMemberTeam" style="width: 100%;" title="None">
           <li nya-bs-option="team in members.teams">
             <a>{{team.name}}</a>

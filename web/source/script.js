@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    var app = angular.module('coachassistant', ['jcs-autoValidate', 'nya.bootstrap.select', 'ui.bootstrap', 'ui.router', 'ui.validate']),
+    var app = angular.module('coachassistant', ['com.2fdevs.videogular', 'jcs-autoValidate', 'ngSanitize', 'nya.bootstrap.select', 'ui.bootstrap', 'ui.router', 'ui.validate']),
         Coachassistant = ['$rootScope', function ($rootScope) {
             this.club = null;
 
@@ -171,7 +171,7 @@
                     viewMember: function (member) {
                         $modal.open({
                             backdrop: 'static',
-                            controller: ['$modalInstance', '$scope', 'coachassistant', 'teams', function ($modalInstance, $scope, coachassistant, teams) {
+                            controller: ['$modalInstance', '$scope', 'coachassistant', 'teams', 'videos', function ($modalInstance, $scope, coachassistant, teams, videos) {
                                 var hackGetTeam = function (teamUuid) {
                                     var i;
 
@@ -202,7 +202,8 @@
                                     updateMemberModel: {
                                         updateMemberName: member.name,
                                         updateMemberTeam: hackGetTeam(member.teamUuid)
-                                    }
+                                    },
+                                    videos: videos
                                 };
 
                                 coachassistant.onClubSet(function () {
@@ -228,8 +229,22 @@
                                     }
 
                                     return deferred.promise;
-                                }]
+                                }],
+                                videos: ['$q', '$http', function ($q, $http) {
+                                    var deferred = $q.defer();
 
+                                    if (!$scope.members.selectedClub) {
+                                        deferred.reject();
+                                    } else {
+                                        $http.get('/api/0.0.0/clubs/' + $scope.members.selectedClub.uuid + '/videos/member/' + member.uuid).success(function (result) {
+                                            deferred.resolve(result.items);
+                                        }).error(function (error) {
+                                            deferred.reject(error);
+                                        });
+                                    }
+
+                                    return deferred.promise;
+                                }]
                             },
                             size: 'sm',
                             templateUrl: '/templates/member.html'
@@ -311,7 +326,7 @@
                     viewTeam: function (team) {
                         $modal.open({
                             backdrop: 'static',
-                            controller: ['$modalInstance', '$scope', 'coachassistant', 'members', function ($modalInstance, $scope, coachassistant, members) {
+                            controller: ['$modalInstance', '$scope', 'coachassistant', 'members', 'videos', function ($modalInstance, $scope, coachassistant, members, videos) {
                                 $scope.team = {
                                     cancel: function () {
                                         $modalInstance.close();
@@ -328,7 +343,8 @@
                                     },
                                     updateTeamModel: {
                                         updateTeamName: team.name
-                                    }
+                                    },
+                                    videos: videos
                                 };
 
                                 coachassistant.onClubSet(function () {
@@ -348,6 +364,21 @@
                                     }).error(function (error) {
                                         deferred.reject(error);
                                     });
+
+                                    return deferred.promise;
+                                }],
+                                videos: ['$q', '$http', function ($q, $http) {
+                                    var deferred = $q.defer();
+
+                                    if (!$scope.teams.selectedClub) {
+                                        deferred.reject();
+                                    } else {
+                                        $http.get('/api/0.0.0/clubs/' + $scope.teams.selectedClub.uuid + '/videos/team/' + team.uuid).success(function (result) {
+                                            deferred.resolve(result.items);
+                                        }).error(function (error) {
+                                            deferred.reject(error);
+                                        });
+                                    }
 
                                     return deferred.promise;
                                 }]
@@ -422,7 +453,7 @@
                     viewTrainingPhase: function (trainingPhase) {
                         $modal.open({
                             backdrop: 'static',
-                            controller: ['$modalInstance', '$scope', 'coachassistant', 'members', function ($modalInstance, $scope, coachassistant, members) {
+                            controller: ['$modalInstance', '$scope', 'coachassistant', 'members', 'videos', function ($modalInstance, $scope, coachassistant, members, videos) {
                                 $scope.trainingPhase = {
                                     cancel: function () {
                                         $modalInstance.close();
@@ -439,7 +470,8 @@
                                     },
                                     updateTrainingPhaseModel: {
                                         updateTrainingPhaseName: trainingPhase.name
-                                    }
+                                    },
+                                    videos: videos
                                 };
 
                                 coachassistant.onClubSet(function () {
@@ -459,6 +491,21 @@
                                     }).error(function (error) {
                                         deferred.reject(error);
                                     });
+
+                                    return deferred.promise;
+                                }],
+                                videos: ['$q', '$http', function ($q, $http) {
+                                    var deferred = $q.defer();
+
+                                    if (!$scope.trainingPhases.selectedClub) {
+                                        deferred.reject();
+                                    } else {
+                                        $http.get('/api/0.0.0/clubs/' + $scope.trainingPhases.selectedClub.uuid + '/videos/training-phase/' + trainingPhase.uuid).success(function (result) {
+                                            deferred.resolve(result.items);
+                                        }).error(function (error) {
+                                            deferred.reject(error);
+                                        });
+                                    }
 
                                     return deferred.promise;
                                 }]
@@ -491,6 +538,22 @@
             },
             templateUrl: 'templates/training-phases.html',
             url: '/training-phases'
+        }).state('videos', {
+            controller: ['$sce', '$scope', '$stateParams', 'club', function ($sce, $scope, $stateParams, club) {
+                // Listen to changes to "club" if necessary.
+                $scope.videogular = {
+                    preload: 'none',
+                    sources: [ { src: $sce.trustAsResourceUrl('/api/0.0.0/clubs/' + club.uuid + '/videos/uuid/' + $stateParams.uuid + '/download'), type: 'video/webm' } ],
+                    theme: {
+                        url: 'https://www.videogular.com/styles/themes/default/latest/videogular.css'
+                    }
+                };
+            }],
+            resolve: {
+                club: clubResolve
+            },
+            templateUrl: 'templates/videos.html',
+            url: '/videos/:uuid'
         });
     }]);
 

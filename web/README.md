@@ -9,6 +9,14 @@ to rebuild the server if it changes.)
 
     $ docker build -t coachassistant-server ../server
 
+On Fedora 22, it might be necessary to configure/disable SELinux and do the
+following:
+
+    $ sudo firewall-cmd --permanent --zone=public --add-interface=docker0
+    $ sudo firewall-cmd --permanent --zone=public --add-masquerade
+    $ systemctl restart firewalld
+    $ systemctl restart docker
+
 Run the necessary containers and the web server:
 
     $ fig up

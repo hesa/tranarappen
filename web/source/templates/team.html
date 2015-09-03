@@ -9,6 +9,15 @@
         <input class="form-control" name="updateTeamName" ng-model="team.updateTeamModel.updateTeamName" type="text" id="updateTeamName" required />
       </div>
     </form>
+    <!-- TODO: Should not use form group here, probably. -->
+    <div class="form-group" ng-show="team.videos.length > 0" style="padding: 0px 6px;">
+      <label class="control-label">Videos</label>
+      <ol>
+	<li ng-repeat="video in team.videos">
+          <a ng-click="team.cancel()" ui-sref="videos({ uuid: video.uuid })">{{video.published | date: "yyyy-MM-dd HH:mm"}}</a>
+	</li>
+      </ol>
+    </div>
   </div>
   <div class="modal-footer">
     <button class="btn btn-warning" ng-click="team.cancel()" type="button">Cancel</button>

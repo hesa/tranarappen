@@ -4,9 +4,10 @@
         "angular-auto-validate": "1.*",
         "angular-bootstrap": "*",
         "angular-ui-router": "*",
+        "angular-ui-validate": "~1.1.1",
         "bootstrap-css-only": "*",
         "nya-bootstrap-select": "~2.0.10",
-        "angular-ui-validate": "~1.1.1"
+        "videogular": "~1.2.6"
     },
     "ignore": [
         "node_modules/",

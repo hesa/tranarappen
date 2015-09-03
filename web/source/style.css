@@ -6,3 +6,5 @@ h1 { font-size: 28px; }
 h2 { font-size: 22px; }
 
 div#clubs a.list-group-item { cursor: pointer; }
+
+video { height: 608px; width: 1080px; }

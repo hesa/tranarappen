@@ -4,16 +4,28 @@
 
 Docker and Fig needs to be installed.
 
-Run the project:
+Configure the submodule dependency:
 
     $ git submodule init && git submodule update
+
+On Fedora 22, it might be necessary to configure/disable SELinux and do the
+following:
+
+    $ sudo firewall-cmd --permanent --zone=public --add-interface=docker0
+    $ sudo firewall-cmd --permanent --zone=public --add-masquerade
+    $ systemctl restart firewalld
+    $ systemctl restart docker
+
+Run the project:
+
     $ fig up
 
 For rebuilding the project, do the following:
 
+    $ git submodule update
     $ fig kill && fig rm --force && fig build && fig up
 
-Compiling:
+Compiling (requires "libpq-dev" on Debian and "postgresql-devel" on Fedora):
 
     $ cabal sandbox delete
     $ cabal sandbox init
@@ -29,7 +41,7 @@ Let's start by adding a club:
 
 Note that the service generates a UUID identifier for the club in the response:
 
-    {"uuid":"5f7e5a88-68bc-4581-8103-c8b2effc373d","name":"Bergsjö IF"}
+    {"uuid":"5f7e5a88-68bc-4581-8103-c8b2effc373d","created":"2015-09-03T15:28:01.016843000000Z","teamUuids":[],"memberUuids":[],"trainingPhaseUuids":[],"videoUuids":[],"name":"Bergsjö IF"}
 
 We will use this identifier to below.
 
@@ -65,37 +77,88 @@ Training phases can also be added:
 
 Finally, in order to allow for effective synchronization of club-related information, a special composite endpoint is offered:
 
-    curl --request GET localhost:3000/0.0.0/club-composite/5f7e5a88-68bc-4581-8103-c8b2effc373d
+    curl --request GET localhost:3000/0.0.0/5f7e5a88-68bc-4581-8103-c8b2effc373d/composite
 
 The output of this will look something like this:
 
     {
-        "members": [
+        "videos":
+        [
+        ],
+        "members":
+        [
             {
-                "uuid":"119998b8-d8b1-45e8-9429-47f36d7f3de9",
-                "name":"Henrik",
-                "clubUuid":"5f7e5a88-68bc-4581-8103-c8b2effc373d"
+                "uuid": "92083708-5c47-4c2e-920d-193b5ffd8862",
+                "created": "2015-09-02T16:09:48.423585000000Z",
+                "videoUuids":
+                [
+                ],
+                "name": "Henrik",
+                "clubUuid": "4bdafb08-d8a5-40e2-83c6-f78f206f9e0f",
+                "teamUuid": "e02897a1-adb2-4e61-bcd3-2846f6eeb7fe"
             },
             {
-                "uuid":"78a18f13-d17c-4541-af39-d1e7a0dd3c0b",
-                "name":"Jon",
-                "clubUuid":"5f7e5a88-68bc-4581-8103-c8b2effc373d",
-                "teamUuid":"4bc5bcbc-b837-40c4-8f47-3a855b11ce8a"
+                "uuid": "80226dee-0459-4e97-a156-e3fb09c669e2",
+                "created": "2015-09-02T16:09:43.959423000000Z",
+                "videoUuids":
+                [
+                ],
+                "name": "Jon",
+                "clubUuid": "4bdafb08-d8a5-40e2-83c6-f78f206f9e0f",
+                "teamUuid": "70d1d759-2238-4d21-95c5-6c63d7d9ab22"
             }
         ],
-        "teams": [
+        "teams":
+        [
             {
-                "uuid":"4bc5bcbc-b837-40c4-8f47-3a855b11ce8a",
-                "name":"P06",
-                "clubUuid":"5f7e5a88-68bc-4581-8103-c8b2effc373d"
-            }
-        ],
-        "trainingPhases": [
+                "uuid": "70d1d759-2238-4d21-95c5-6c63d7d9ab22",
+                "created": "2015-09-02T16:09:35.633229000000Z",
+                "memberUuids":
+                [
+                    "80226dee-0459-4e97-a156-e3fb09c669e2"
+                ],
+                "videoUuids":
+                [
+                ],
+                "name": "F10",
+                "clubUuid": "4bdafb08-d8a5-40e2-83c6-f78f206f9e0f"
+            },
             {
-                "uuid":"927069fa-d5eb-4e77-aa2b-2768dd528fc3",
-                "name":"Slå Henrik i armhävningar",
-                "clubUuid":"5f7e5a88-68bc-4581-8103-c8b2effc373d"
+                "uuid": "e02897a1-adb2-4e61-bcd3-2846f6eeb7fe",
+                "created": "2015-09-02T16:09:34.627710000000Z",
+                "memberUuids":
+                [
+                    "92083708-5c47-4c2e-920d-193b5ffd8862"
+                ],
+                "videoUuids":
+                [
+                ],
+                "name": "P10",
+                "clubUuid": "4bdafb08-d8a5-40e2-83c6-f78f206f9e0f"
             }
         ],
-        "name":"Bergsjö IF"
+        "trainingPhases":
+        [
+            {
+                "uuid": "bd59ad1d-6c64-4d2b-a5f2-108c8ec5b931",
+                "created": "2015-09-02T16:09:54.335738000000Z",
+                "videoUuids":
+                [
+                ],
+                "name": "Armhävningar",
+                "clubUuid": "4bdafb08-d8a5-40e2-83c6-f78f206f9e0f"
+            },
+            {
+                "uuid": "63603cc4-d0be-4cca-b5a9-8099957660ce",
+                "created": "2015-09-02T16:09:56.506154000000Z",
+                "videoUuids":
+                [
+                ],
+                "name": "Uppvärmning",
+                "clubUuid": "4bdafb08-d8a5-40e2-83c6-f78f206f9e0f"
+            }
+        ],
+        "name": "Bergsjö IF",
+	"uuid":"5f7e5a88-68bc-4581-8103-c8b2effc373d",
+	"created":"2015-09-03T15:28:01.016843000000Z"
     }

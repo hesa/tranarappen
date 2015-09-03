@@ -30,8 +30,13 @@ TrainingPhase
     UniqueTrainingPhaseName name clubUuid
 Video
     uuid UUID
-    success Bool Maybe
+    trainingPhaseUuid UUID
+    memberUuid UUID Maybe
+    status VideoStatus
     created UTCTime default=now()
+    published UTCTime Maybe
     clubUuid UUID
     Primary uuid
+    Foreign TrainingPhase trainingPhaseUuidKey trainingPhaseUuid
+    Foreign Member memberUuidKey memberUuid
     Foreign Club clubUuidKey clubUuid

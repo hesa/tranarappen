@@ -1,5 +1,5 @@
 web:
-  build: .
+  build: web
   links:
   - server
   ports:
@@ -14,9 +14,9 @@ database:
   ports:
   - "5432:5432"
 server:
+  build: server
   environment:
     DB_PASSWORD: GoiCJTC4tbt4
-  image: coachassistant-server
   links:
   - database
   ports:

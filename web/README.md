@@ -1,37 +1,6 @@
 # Web service for coachassistant
 
-## Running
-
-As with the server component, Docker and Fig needs to be installed.
-
-First, you will need to build a Docker image of the server. (You will also need
-to rebuild the server if it changes.)
-
-    $ docker build -t coachassistant-server ../server
-
-On Fedora 22, it might be necessary to configure/disable SELinux and do the
-following:
-
-    $ sudo firewall-cmd --permanent --zone=public --add-interface=docker0
-    $ sudo firewall-cmd --permanent --zone=public --add-masquerade
-    $ systemctl restart firewalld
-    $ systemctl restart docker
-
-Run the necessary containers and the web server:
-
-    $ fig up
-
-For rebuilding the project, do the following (as with the server component):
-
-    $ fig kill && fig rm --force && fig build && fig up
-
-The server will now be running at https://localhost/. We're using a snakeoil
-HTTPS certificate that you will likely have to add as an exception to your
-browser's HTTPS settings.
-
-## Development
-
-Start the services according to the instructions in the previous section.
+## Building
 
 Install Node.js:
 

@@ -1,29 +1,10 @@
 # Server component for coachassistant
 
-## Building and running
-
-Docker and Fig needs to be installed.
+## Building
 
 Configure the submodule dependency:
 
     $ git submodule init && git submodule update
-
-On Fedora 22, it might be necessary to configure/disable SELinux and do the
-following:
-
-    $ sudo firewall-cmd --permanent --zone=public --add-interface=docker0
-    $ sudo firewall-cmd --permanent --zone=public --add-masquerade
-    $ systemctl restart firewalld
-    $ systemctl restart docker
-
-Run the project:
-
-    $ fig up
-
-For rebuilding the project, do the following:
-
-    $ git submodule update
-    $ fig kill && fig rm --force && fig build && fig up
 
 Compiling (requires "libpq-dev" on Debian and "postgresql-devel" on Fedora):
 

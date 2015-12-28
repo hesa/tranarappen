@@ -30,7 +30,7 @@ import Database.Persist.Sql
 import Database.Persist.TH
 import Generics.Generic.Aeson
 import GHC.Generics
-import Lambdatrade
+import Lambdatrade hiding (Conflict)
 import Network.Wai.Handler.Warp
 import Rest
 import Rest.Api

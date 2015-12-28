@@ -1,12 +1,12 @@
 name:          coachassistant-server
 version:       0.0.0.0
 synopsis:      The server component for coachassistant
-description:   The server component for coachassitant, a software suite
-               to assist coaches/instructors during actual trianing.
+description:   The server component for coachassistant, a software suite
+               to assist coaches/instructors during trianing.
 license:       BSD3
 license-file:  LICENSE
 author:        Jon Kristensen
-maintainer:    info@lambdatrade.com
+maintainer:    jon@nejla.com
 copyright:     Jon Kristensen, 2015
 category:      Sports
 build-type:    Simple
@@ -32,7 +32,7 @@ executable coachassistant-server
                     rest-wai,
                     text,
                     time,
-                    transformers,
+                    transformers >=0.4,
                     uuid,
                     warp
   hs-source-dirs:   source

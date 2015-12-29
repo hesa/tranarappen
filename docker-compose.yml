@@ -5,7 +5,7 @@ web:
   ports:
   - "443:443"
   volumes:
-  - ./app:/usr/share/nginx/html:ro
+  - ./web/app:/usr/share/nginx/html:ro
 database:
   environment:
     POSTGRES_USER: lambdatrade

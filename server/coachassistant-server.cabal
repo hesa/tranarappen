@@ -14,6 +14,7 @@ cabal-version: >=1.10
 
 executable coachassistant-server
   main-is:          Main.hs
+  other-modules:    Other, Routes, Types, Utilities
   build-depends:    aeson,
                     base >=4.7 && <4.8,
                     bytestring,

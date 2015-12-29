@@ -1,6 +1,7 @@
 module Utilities where
 
 import Control.Monad.Reader
+import Data.Maybe
 import Database.Persist
 import Database.Persist.Sql
 import Lambdatrade hiding (Conflict)
@@ -27,69 +28,91 @@ conflictInsert e = do
 -- m0 ambigous if commented
 getClubs :: ReaderT ConnectionPool IO [WithMemberUuids (WithTeamUuids (WithTrainingPhaseUuids (WithVideoUuids Club)))]
 getClubs = do
-    clubs <- runQuery $ selectList [] [Asc ClubName]
-    mapM (getClub . Left . entityVal) clubs
+    clubEntities <- runQuery $ selectList [] [Asc ClubName]
+    mbClubs <- forM clubEntities $ getClub . Left . entityVal
+    return $ catMaybes mbClubs
 
 -- getClub :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => Either Club UUID -> m (WithMemberUuids (WithTeamUuids (WithTrainingPhaseUuids (WithVideoUuids Club))))
 getClub value = do
-    (uuid, club) <- case value of
-        Left club -> return (clubUuid club, club)
+    (uuid, mbClub) <- case value of
+        Left club -> return (clubUuid club, Just club)
         Right uuid -> do
-            Just club <- runQuery (Database.Persist.get (ClubKey uuid))
-            return (uuid, club)
-    members <- getMembers uuid Nothing
-    teams <- getTeams uuid
-    trainingPhases <- getTrainingPhases uuid
-    videos <- getVideos uuid AllVideos
-    return (WithMemberUuids (WithField (map (memberUuid . withFieldBase . unWithVideoUuids) members) (WithTeamUuids (WithField (map (teamUuid . withFieldBase . unWithMemberUuids . withFieldBase . unWithVideoUuids) teams) (WithTrainingPhaseUuids (WithField (map (trainingPhaseUuid . withFieldBase . unWithVideoUuids) trainingPhases) (WithVideoUuids (WithField (map videoUuid videos) club))))))))
+            mbClub <- runQuery $ Database.Persist.get $ ClubKey uuid
+            return (uuid, mbClub)
+    case mbClub of
+        Just club -> do
+            members <- getMembers uuid Nothing
+            teams <- getTeams uuid
+            trainingPhases <- getTrainingPhases uuid
+            videos <- getVideos uuid AllVideos
+            return $ Just $
+                WithMemberUuids $ WithField (map (memberUuid . withFieldBase . unWithVideoUuids) members) $
+                WithTeamUuids $ WithField (map (teamUuid . withFieldBase . unWithMemberUuids . withFieldBase . unWithVideoUuids) teams) $
+                WithTrainingPhaseUuids $ WithField (map (trainingPhaseUuid . withFieldBase . unWithVideoUuids) trainingPhases) $
+                WithVideoUuids $ WithField (map videoUuid videos) club
+        Nothing -> return Nothing
 
 -- getMembers :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => UUID -> Maybe UUID -> m [WithVideoUuids Member]
 getMembers clubUuid mbTeamUuid = do
     members <- runQuery $ flip selectList [Asc MemberName] $ case mbTeamUuid of
         Just teamUuid -> [MemberClubUuid ==. clubUuid, MemberTeamUuid ==. Just teamUuid]
         Nothing -> [MemberClubUuid ==. clubUuid]
-    mapM (getMember clubUuid . Left . entityVal) members
+    mbMembers <- forM members $ getMember clubUuid . Left . entityVal
+    return $ catMaybes mbMembers
 
 -- getMember :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => UUID -> Either Member UUID -> m (WithVideoUuids Member)
-getMember clubUuid value = do
-    (uuid, member) <- case value of
-        Left member -> return (memberUuid member, member)
+getMember clubUuid memberOrUuid = do
+    (uuid, mbMember) <- case memberOrUuid of
+        Left member -> return (memberUuid member, Just member)
         Right uuid -> do
-            Just member <- runQuery (Database.Persist.get (MemberKey uuid))
-            return (uuid, member)
-    videos <- getVideos clubUuid (VideosByMember uuid)
-    return (WithVideoUuids (WithField (map videoUuid videos) member))
+            mbMember <- runQuery $ Database.Persist.get $ MemberKey uuid
+            return (uuid, mbMember)
+    case mbMember of
+        Just member -> do
+            videos <- getVideos clubUuid (VideosByMember uuid)
+            return $ Just $ WithVideoUuids $ WithField (map videoUuid videos) member
+        Nothing -> return Nothing
 
 -- getTeams :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => UUID -> m [WithVideoUuids (WithMemberUuids Team)]
 getTeams clubUuid = do
-    teams <- runQuery (selectList [TeamClubUuid ==. clubUuid] [Asc TeamName])
-    mapM (getTeam clubUuid . Left . entityVal) teams
+    teams <- runQuery $ selectList [TeamClubUuid ==. clubUuid] [Asc TeamName]
+    mbTeams <- forM teams $ getTeam clubUuid . Left . entityVal
+    return $ catMaybes mbTeams
 
 -- getTeam :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => UUID -> Either Team UUID -> m (WithVideoUuids (WithMemberUuids Team))
-getTeam clubUuid value = do
-    (uuid, team) <- case value of
-        Left team -> return (teamUuid team, team)
+getTeam clubUuid teamOrUuid = do
+    (uuid, mbTeam) <- case teamOrUuid of
+        Left team -> return (teamUuid team, Just team)
         Right uuid -> do
-            Just team <- runQuery (Database.Persist.get (TeamKey uuid))
-            return (uuid, team)
-    members <- getMembers clubUuid (Just uuid)
-    videos <- getVideos clubUuid (VideosByTeam uuid)
-    return (WithVideoUuids (WithField (map videoUuid videos) (WithMemberUuids (WithField (map (memberUuid . withFieldBase . unWithVideoUuids) members) team))))
+            mbTeam <- runQuery $ Database.Persist.get $ TeamKey uuid
+            return (uuid, mbTeam)
+    case mbTeam of
+        Just team -> do
+            members <- getMembers clubUuid (Just uuid)
+            videos <- getVideos clubUuid (VideosByTeam uuid)
+            return $ Just $
+                WithVideoUuids $ WithField (map videoUuid videos) $
+                WithMemberUuids $ WithField (map (memberUuid . withFieldBase . unWithVideoUuids) members) team
+        Nothing -> return Nothing
 
 -- getTrainingPhases :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => UUID -> m [WithVideoUuids TrainingPhase]
 getTrainingPhases clubUuid = do
-    trainingPhases <- runQuery (selectList [TrainingPhaseClubUuid ==. clubUuid] [Asc TrainingPhaseName])
-    mapM (getTrainingPhase clubUuid . Left . entityVal) trainingPhases
+    trainingPhases <- runQuery $ selectList [TrainingPhaseClubUuid ==. clubUuid] [Asc TrainingPhaseName]
+    mbTrainingPhases <- forM trainingPhases $ getTrainingPhase clubUuid . Left . entityVal
+    return $ catMaybes mbTrainingPhases
 
 -- getTrainingPhase :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => UUID -> Either TrainingPhase UUID -> m (WithVideoUuids TrainingPhase)
-getTrainingPhase clubUuid value = do
-    (uuid, trainingPhase) <- case value of
-        Left trainingPhase -> return (trainingPhaseUuid trainingPhase, trainingPhase)
+getTrainingPhase clubUuid trainingPhaseOrUuid = do
+    (uuid, mbTrainingPhase) <- case trainingPhaseOrUuid of
+        Left trainingPhase -> return (trainingPhaseUuid trainingPhase, Just trainingPhase)
         Right uuid -> do
-            Just trainingPhase <- runQuery (Database.Persist.get (TrainingPhaseKey uuid))
-            return (uuid, trainingPhase)
-    videos <- getVideos clubUuid (VideosByTrainingPhase uuid)
-    return (WithVideoUuids (WithField (map videoUuid videos) trainingPhase))
+            mbTrainingPhase <- runQuery $ Database.Persist.get $ TrainingPhaseKey uuid
+            return (uuid, mbTrainingPhase)
+    case mbTrainingPhase of
+        Just trainingPhase -> do
+            videos <- getVideos clubUuid (VideosByTrainingPhase uuid)
+            return $ Just $ WithVideoUuids $ WithField (map videoUuid videos) trainingPhase
+        Nothing -> return Nothing
 
 -- getVideos :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => UUID -> VideoListAccessor -> m [Video]
 getVideos clubUuid accessor = do
@@ -98,17 +121,17 @@ getVideos clubUuid accessor = do
         E.where_ (video E.^. VideoClubUuid E.==. E.val clubUuid)
         case accessor of
             AllVideos -> return ()
-            InstructionalVideos -> E.where_ (E.isNothing $ video E.^.VideoMemberUuid)
-            VideosByMember memberUuid -> E.where_ (video E.^. VideoMemberUuid E.==. E.val (Just memberUuid))
-            VideosByTeam teamUuid -> E.where_ (E.exists . E.from $ \member -> do
-                E.where_ (member E.^. MemberTeamUuid E.==. E.val (Just teamUuid))
-                E.where_ (video E.^. VideoMemberUuid E.==. E.just (member E.^. MemberUuid)))
-            VideosByTrainingPhase trainingPhaseUuid -> E.where_ (video E.^. VideoTrainingPhaseUuid E.==. E.val trainingPhaseUuid)
-        E.orderBy [E.desc (video E.^. VideoPublished)]
+            InstructionalVideos -> E.where_ $ E.isNothing $ video E.^.VideoMemberUuid
+            VideosByMember memberUuid -> E.where_ $ video E.^. VideoMemberUuid E.==. E.val (Just memberUuid)
+            VideosByTeam teamUuid -> E.where_ $ E.exists . E.from $ \member -> do
+                E.where_ $ member E.^. MemberTeamUuid E.==. E.val (Just teamUuid)
+                E.where_ $ video E.^. VideoMemberUuid E.==. E.just (member E.^. MemberUuid)
+            VideosByTrainingPhase trainingPhaseUuid -> E.where_ $ video E.^. VideoTrainingPhaseUuid E.==. E.val trainingPhaseUuid
+        E.orderBy [E.desc $ video E.^. VideoPublished]
         return video
-    return (map entityVal videos)
+    return $ map entityVal videos
 
 -- getVideo :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => UUID -> m Video
 getVideo uuid = do
-    Just video <- runQuery (Database.Persist.get (VideoKey uuid))
+    video <- runQuery $ Database.Persist.get $ VideoKey uuid
     return video

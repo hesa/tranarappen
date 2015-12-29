@@ -16,6 +16,7 @@ executable coachassistant-server
   main-is:          Main.hs
   other-modules:    Other, Routes, Types, Utilities
   build-depends:    aeson,
+                    async,
                     base >=4.7 && <4.8,
                     bytestring,
                     data-default,

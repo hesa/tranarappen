@@ -57,7 +57,13 @@ clubsR = mkResourceReader { R.create = Just create
                 teams <- getTeams uuid
                 trainingPhases <- getTrainingPhases uuid
                 videos <- getVideos uuid AllVideos
-                return $ Right $ ClubComposite (clubUuid club) (clubName club) (clubCreated club) members teams trainingPhases videos
+                return $ Right $ ClubComposite { clubCompositeUuid = clubUuid club
+                                               , clubCompositeName = clubName club
+                                               , clubCompositeCreated = clubCreated club
+                                               , clubCompositeMembers = members
+                                               , clubCompositeTeams = teams
+                                               , clubCompositeTrainingPhases = trainingPhases
+                                               , clubCompositeVideos = videos }
             Nothing -> return $ Left NotFound
     get :: Handler (ReaderT ClubUuid App)
     get = mkIdHandler jsonO $ \() uuid -> ExceptT $ do

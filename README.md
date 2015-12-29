@@ -30,4 +30,7 @@ For rebuilding the project, do the following:
     $ cd server
     $ git submodule update
     $ cd ..
-    $ fig kill && fig rm --force && fig build && fig up
+    $ docker-compose kill && \
+      docker-compose rm --force && \
+      docker-compose build && \
+      docker-compose up

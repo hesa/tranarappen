@@ -84,13 +84,13 @@ type TeamUuid = UUID
 type TrainingPhaseUuid = UUID
 type VideoUuid = UUID
 
-data ClubComposite = ClubComposite { clubCompositeUuid :: ClubUuid
-                                   , clubCompositeName :: Text
-                                   , clubCompositeCreated :: UTCTime
-                                   , clubCompositeMembers :: [WithVideoUuids Member]
-                                   , clubCompositeTeams :: [WithVideoUuids (WithMemberUuids Team)]
-                                   , clubCompositeTrainingPhases :: [WithVideoUuids TrainingPhase]
-                                   , clubCompositeVideos :: [Video] }
+data ClubComposite = ClubComposite { clubCompositeUuid :: !ClubUuid
+                                   , clubCompositeName :: !Text
+                                   , clubCompositeCreated :: !UTCTime
+                                   , clubCompositeMembers :: ![WithVideoUuids Member]
+                                   , clubCompositeTeams :: ![WithVideoUuids (WithMemberUuids Team)]
+                                   , clubCompositeTrainingPhases :: ![WithVideoUuids TrainingPhase]
+                                   , clubCompositeVideos :: ![Video] }
 
 mkGenericJSON [t|ClubComposite|]
 

@@ -560,7 +560,7 @@
     app.run(['$rootScope', '$state', '$window', 'bootstrap3ElementModifier', 'defaultErrorMessageResolver', function ($rootScope, $state, $window, bootstrap3ElementModifier, defaultErrorMessageResolver) {
         bootstrap3ElementModifier.enableValidationStateIcons(true);
         defaultErrorMessageResolver.getErrorMessages().then(function (errorMessages) {
-            errorMessages.notUniqueError = 'An entity with this name already exists';
+            errorMessages.notUniqueError = 'En entitet med det namnet finns redan';
         });
         $rootScope.$on('$stateChangeError', function (event) {
             event.preventDefault();

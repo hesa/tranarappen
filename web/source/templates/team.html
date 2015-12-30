@@ -1,17 +1,17 @@
 <div id="team">
   <div class="modal-header">
-    <h4 class="modal-title">Team: {{team.team.name}}</h4>
+    <h4 class="modal-title">Lag: {{team.team.name}}</h4>
   </div>
   <div class="modal-body">
     <form name="updateTeamForm" ng-submit="team.update()">
       <div class="form-group" style="padding: 0px 6px;">
-        <label class="control-label" for="updateTeamName">Team name</label>
+        <label class="control-label" for="updateTeamName">Lagnamn</label>
         <input class="form-control" name="updateTeamName" ng-model="team.updateTeamModel.updateTeamName" type="text" id="updateTeamName" required />
       </div>
     </form>
     <!-- TODO: Should not use form group here, probably. -->
     <div class="form-group" ng-show="team.videos.length > 0" style="padding: 0px 6px;">
-      <label class="control-label">Videos</label>
+      <label class="control-label">Videoklipp</label>
       <ol>
 	<li ng-repeat="video in team.videos">
           <a ng-click="team.cancel()" ui-sref="videos({ uuid: video.uuid })">{{video.published | date: "yyyy-MM-dd HH:mm"}}</a>
@@ -20,7 +20,7 @@
     </div>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-warning" ng-click="team.cancel()" type="button">Cancel</button>
-    <button class="btn btn-primary" ng-click="team.update()" type="button">Update</button>
+    <button class="btn btn-warning" ng-click="team.cancel()" type="button">Avbryt</button>
+    <button class="btn btn-primary" ng-click="team.update()" type="button">Uppdatera</button>
   </div>
 </div>

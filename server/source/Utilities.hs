@@ -2,7 +2,6 @@ module Utilities where
 
 import Control.Monad.Reader
 import Data.Maybe
-import Database.Persist
 import Database.Persist.Sql
 import Lambdatrade hiding (Conflict)
 import Rest
@@ -20,7 +19,7 @@ runQuery a = ask >>= runSqlPool a
 
 -- conflictInsert :: (MonadBaseControl IO m, PersistEntity b, MonadReader (Pool SqlBackend) m, MonadIO m, (~) * (PersistEntityBackend b) SqlBackend) => b -> m (Either (Reason AppError) b)
 conflictInsert e = do
-    result <- runQuery $ insertUnique e
+    result <- runQuery $ E.insertUnique e
     return $ case result of
         Just _ -> Right e
         Nothing -> Left $ CustomReason $ DomainReason Conflict
@@ -28,7 +27,9 @@ conflictInsert e = do
 -- m0 ambigous if commented
 getClubs :: ReaderT ConnectionPool IO [WithMemberUuids (WithTeamUuids (WithTrainingPhaseUuids (WithVideoUuids Club)))]
 getClubs = do
-    clubEntities <- runQuery $ selectList [] [Asc ClubName]
+    clubEntities <- runQuery $ E.select $ E.from $ \club -> do
+        E.orderBy [E.asc $ club E.^.ClubName]
+        return club
     mbClubs <- forM clubEntities $ getClub . Left . entityVal
     return $ catMaybes mbClubs
 
@@ -37,7 +38,7 @@ getClub value = do
     (uuid, mbClub) <- case value of
         Left club -> return (clubUuid club, Just club)
         Right uuid -> do
-            mbClub <- runQuery $ Database.Persist.get $ ClubKey uuid
+            mbClub <- runQuery $ E.get $ ClubKey uuid
             return (uuid, mbClub)
     case mbClub of
         Just club -> do
@@ -54,9 +55,13 @@ getClub value = do
 
 -- getMembers :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => UUID -> Maybe UUID -> m [WithVideoUuids Member]
 getMembers clubUuid mbTeamUuid = do
-    members <- runQuery $ flip selectList [Asc MemberName] $ case mbTeamUuid of
-        Just teamUuid -> [MemberClubUuid ==. clubUuid, MemberTeamUuid ==. Just teamUuid]
-        Nothing -> [MemberClubUuid ==. clubUuid]
+    members <- runQuery $ E.select $ E.from $ \member -> do
+        E.where_ (member E.^. MemberClubUuid E.==. E.val clubUuid)
+        case mbTeamUuid of
+            Just teamUuid -> E.where_ (member E.^. MemberTeamUuid E.==. E.val (Just teamUuid))
+            Nothing -> return ()
+        E.orderBy [E.asc $ member E.^.MemberName]
+        return member
     mbMembers <- forM members $ getMember clubUuid . Left . entityVal
     return $ catMaybes mbMembers
 
@@ -65,7 +70,7 @@ getMember clubUuid memberOrUuid = do
     (uuid, mbMember) <- case memberOrUuid of
         Left member -> return (memberUuid member, Just member)
         Right uuid -> do
-            mbMember <- runQuery $ Database.Persist.get $ MemberKey uuid
+            mbMember <- runQuery $ E.get $ MemberKey uuid
             return (uuid, mbMember)
     case mbMember of
         Just member -> do
@@ -75,7 +80,10 @@ getMember clubUuid memberOrUuid = do
 
 -- getTeams :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => UUID -> m [WithVideoUuids (WithMemberUuids Team)]
 getTeams clubUuid = do
-    teams <- runQuery $ selectList [TeamClubUuid ==. clubUuid] [Asc TeamName]
+    teams <- runQuery $ E.select $ E.from $ \team -> do
+        E.where_ (team E.^. TeamClubUuid E.==. E.val clubUuid)
+        E.orderBy [E.asc $ team E.^.TeamName]
+        return team
     mbTeams <- forM teams $ getTeam clubUuid . Left . entityVal
     return $ catMaybes mbTeams
 
@@ -84,7 +92,7 @@ getTeam clubUuid teamOrUuid = do
     (uuid, mbTeam) <- case teamOrUuid of
         Left team -> return (teamUuid team, Just team)
         Right uuid -> do
-            mbTeam <- runQuery $ Database.Persist.get $ TeamKey uuid
+            mbTeam <- runQuery $ E.get $ TeamKey uuid
             return (uuid, mbTeam)
     case mbTeam of
         Just team -> do
@@ -97,7 +105,10 @@ getTeam clubUuid teamOrUuid = do
 
 -- getTrainingPhases :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => UUID -> m [WithVideoUuids TrainingPhase]
 getTrainingPhases clubUuid = do
-    trainingPhases <- runQuery $ selectList [TrainingPhaseClubUuid ==. clubUuid] [Asc TrainingPhaseName]
+    trainingPhases <- runQuery $ E.select $ E.from $ \trainingPhase -> do
+        E.where_ (trainingPhase E.^. TrainingPhaseClubUuid E.==. E.val clubUuid)
+        E.orderBy [E.asc $ trainingPhase E.^.TrainingPhaseName]
+        return trainingPhase
     mbTrainingPhases <- forM trainingPhases $ getTrainingPhase clubUuid . Left . entityVal
     return $ catMaybes mbTrainingPhases
 
@@ -106,7 +117,7 @@ getTrainingPhase clubUuid trainingPhaseOrUuid = do
     (uuid, mbTrainingPhase) <- case trainingPhaseOrUuid of
         Left trainingPhase -> return (trainingPhaseUuid trainingPhase, Just trainingPhase)
         Right uuid -> do
-            mbTrainingPhase <- runQuery $ Database.Persist.get $ TrainingPhaseKey uuid
+            mbTrainingPhase <- runQuery $ E.get $ TrainingPhaseKey uuid
             return (uuid, mbTrainingPhase)
     case mbTrainingPhase of
         Just trainingPhase -> do
@@ -133,5 +144,5 @@ getVideos clubUuid accessor = do
 
 -- getVideo :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => UUID -> m Video
 getVideo uuid = do
-    video <- runQuery $ Database.Persist.get $ VideoKey uuid
+    video <- runQuery $ E.get $ VideoKey uuid
     return video

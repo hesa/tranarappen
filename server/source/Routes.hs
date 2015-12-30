@@ -4,7 +4,6 @@ import Control.Applicative
 import Control.Monad.Except
 import Control.Monad.IO.Class
 import Control.Monad.Reader
-import Database.Persist
 import Data.Time.Clock
 import Data.UUID
 import Data.UUID.V4
@@ -12,6 +11,7 @@ import Rest
 import Rest.Api
 
 import qualified Data.ByteString.Lazy as BL
+import qualified Database.Esqueleto as E
 import qualified Rest.Resource as R
 
 import Other
@@ -44,7 +44,7 @@ clubsR = mkResourceReader { R.create = Just create
                            , clubName = publishClubName publishClub
                            , clubCreated = now }
         case result of
-            Right club -> do
+            Right _ -> do
                mbClub <- lift $ runSql $ getClub $ Right uuid
                case mbClub of
                    Just club -> ExceptT $ return $ Right club
@@ -52,7 +52,7 @@ clubsR = mkResourceReader { R.create = Just create
             Left e -> ExceptT $ return $ Left e
     composite :: Handler (ReaderT ClubUuid App)
     composite = mkIdHandler jsonO $ \() uuid -> ExceptT $ lift $ runSql $ do
-        mbClub <- runQuery $ Database.Persist.get $ ClubKey uuid -- We only need the name.
+        mbClub <- runQuery $ E.get $ ClubKey uuid
         case mbClub of
             Just club -> do
                 members <- getMembers uuid Nothing
@@ -81,11 +81,11 @@ clubsR = mkResourceReader { R.create = Just create
         case mbClub of
             Just _ -> do
                 lift $ runSql $ runQuery $ do
-                    deleteWhere [MemberClubUuid ==. uuid]
-                    deleteWhere [TrainingPhaseClubUuid ==. uuid]
-                    deleteWhere [TeamClubUuid ==. uuid]
-                    deleteWhere [VideoClubUuid ==. uuid]
-                    delete $ ClubKey uuid
+                    E.delete $ E.from $ \member -> E.where_ (member E.^. MemberClubUuid E.==. E.val uuid)
+                    E.delete $ E.from $ \trainingPhase -> E.where_ (trainingPhase E.^. TrainingPhaseClubUuid E.==. E.val uuid)
+                    E.delete $ E.from $ \team -> E.where_ (team E.^. TeamClubUuid E.==. E.val uuid)
+                    E.delete $ E.from $ \video -> E.where_ (video E.^. VideoClubUuid E.==. E.val uuid)
+                    E.deleteKey $ ClubKey uuid
                 return $ Right ()
             Nothing -> return $ Left NotFound
     update :: Handler (ReaderT ClubUuid App)
@@ -95,9 +95,9 @@ clubsR = mkResourceReader { R.create = Just create
         case mbClub of
             Just _ -> do
                 lift $ runSql $ do
-                    runQuery $ Database.Persist.update
-                        (ClubKey uuid)
-                        [ClubName =. publishClubName publishClub]
+                    runQuery $ E.update $ \club -> do
+                        E.set club [ClubName E.=. E.val (publishClubName publishClub)]
+                        E.where_ (club E.^. ClubUuid E.==. E.val uuid)
                     mbClub <- getClub $ Right uuid
                     case mbClub of
                         Just club -> return $ Right club
@@ -150,10 +150,10 @@ clubsMembersR = mkResourceReader { R.create = Just create
             Just _ -> do
                 lift $ lift $ runSql $ do
                     runQuery $ do
-                        deleteWhere [MemberClubUuid ==. clubUuid]
-                        deleteWhere [TrainingPhaseClubUuid ==. clubUuid]
-                        deleteWhere [TeamClubUuid ==. clubUuid]
-                        delete $ MemberKey uuid
+                        E.delete $ E.from $ \member -> E.where_ (member E.^. MemberClubUuid E.==. E.val uuid)
+                        E.delete $ E.from $ \trainingPhase -> E.where_ (trainingPhase E.^. TrainingPhaseClubUuid E.==. E.val uuid)
+                        E.delete $ E.from $ \team -> E.where_ (team E.^. TeamClubUuid E.==. E.val uuid)
+                        E.deleteKey $ MemberKey uuid
                 return $ Right ()
             Nothing -> return $ Left NotFound
     update :: Handler (ReaderT MemberUuid (ReaderT ClubUuid App))
@@ -164,10 +164,10 @@ clubsMembersR = mkResourceReader { R.create = Just create
         case mbMember of
             Just _ -> do
                 lift $ lift $ runSql $ do
-                    runQuery $ Database.Persist.update
-                        (MemberKey uuid)
-                        [ MemberName =. publishMemberName publishMember
-                        , MemberTeamUuid =. publishMemberTeamUuid publishMember ]
+                    runQuery $ E.update $ \member -> do
+                        E.set member [ MemberName E.=. E.val (publishMemberName publishMember)
+                                     , MemberTeamUuid E.=. E.val (publishMemberTeamUuid publishMember) ]
+                        E.where_ (member E.^. MemberUuid E.==. E.val uuid)
                     mbMember <- getMember clubUuid $ Right uuid
                     case mbMember of
                         Just member -> return $ Right member
@@ -217,7 +217,7 @@ clubsTeamsR = mkResourceReader { R.create = Just create
         mbTeam <- lift $ lift $ runSql $ getTeam clubUuid $ Right uuid
         case mbTeam of
             Just _ -> do
-                lift $ lift $ runSql $ runQuery $ delete $ TeamKey uuid
+                lift $ lift $ runSql $ runQuery $ E.deleteKey $ TeamKey uuid
                 return $ Right ()
             Nothing -> return $ Left NotFound
     update :: Handler (ReaderT TeamUuid (ReaderT ClubUuid App))
@@ -228,9 +228,9 @@ clubsTeamsR = mkResourceReader { R.create = Just create
         case mbTeam of
             Just _ -> do
                 lift $ lift $ runSql $ do
-                    runQuery $ Database.Persist.update
-                        (TeamKey uuid)
-                        [TeamName =. publishTeamName publishTeam]
+                    runQuery $ E.update $ \team -> do
+                        E.set team [TeamName E.=. E.val (publishTeamName publishTeam)]
+                        E.where_ (team E.^. TeamUuid E.==. E.val uuid)
                     mbTeam <- getTeam clubUuid $ Right uuid
                     case mbTeam of
                         Just team -> return $ Right team
@@ -251,19 +251,18 @@ clubsTrainingPhasesR = mkResourceReader { R.create = Just create
         clubUuid <- ask
         uuid <- liftIO nextRandom
         now <- liftIO getCurrentTime
-        lift $ runSql $ do
-            result <- conflictInsert $
-                TrainingPhase { trainingPhaseUuid = uuid
-                              , trainingPhaseName = publishTrainingPhaseName publishTrainingPhase
-                              , trainingPhaseCreated = now
-                              , trainingPhaseClubUuid = clubUuid }
-            case result of
-                Right _ -> do
-                    mbTrainingPhase <- getTrainingPhase clubUuid $ Right uuid
-                    case mbTrainingPhase of
-                        Just trainingPhase -> return $ Right trainingPhase
-                        Nothing -> return $ Left NotFound
-                Left e -> return $ Left e
+        result <- lift $ runSql $ conflictInsert $
+            TrainingPhase { trainingPhaseUuid = uuid
+                          , trainingPhaseName = publishTrainingPhaseName publishTrainingPhase
+                          , trainingPhaseCreated = now
+                          , trainingPhaseClubUuid = clubUuid }
+        case result of
+            Right _ -> do
+                mbTrainingPhase <- lift $ runSql $ getTrainingPhase clubUuid $ Right uuid
+                case mbTrainingPhase of
+                    Just trainingPhase -> return $ Right trainingPhase
+                    Nothing -> return $ Left NotFound
+            Left e -> return $ Left e
     get :: Handler (ReaderT TrainingPhaseUuid (ReaderT ClubUuid App))
     get = mkIdHandler jsonO $ \() uuid -> ExceptT $ do
         clubUuid <- lift ask
@@ -281,7 +280,7 @@ clubsTrainingPhasesR = mkResourceReader { R.create = Just create
         mbTrainingPhase <- lift $ lift $ runSql $ getTrainingPhase clubUuid $ Right uuid
         case mbTrainingPhase of
             Just _ -> do
-                lift $ lift $ runSql $ runQuery $ delete $ TrainingPhaseKey uuid
+                lift $ lift $ runSql $ runQuery $ E.deleteKey $ TrainingPhaseKey uuid
                 return $ Right ()
             Nothing -> return $ Left NotFound
     update :: Handler (ReaderT TrainingPhaseUuid (ReaderT ClubUuid App))
@@ -292,9 +291,9 @@ clubsTrainingPhasesR = mkResourceReader { R.create = Just create
         case mbTrainingPhase of
             Just _ -> do
                 lift $ lift $ runSql $ do
-                    runQuery $ Database.Persist.update
-                        (TrainingPhaseKey uuid)
-                        [TrainingPhaseName =. publishTrainingPhaseName publishTrainingPhase]
+                    runQuery $ E.update $ \trainingPhase -> do
+                        E.set trainingPhase [TrainingPhaseName E.=. E.val (publishTrainingPhaseName publishTrainingPhase)]
+                        E.where_ (trainingPhase E.^. TrainingPhaseUuid E.==. E.val uuid)
                     mbTrainingPhase <- getTrainingPhase clubUuid $ Right uuid
                     case mbTrainingPhase of
                         Just trainingPhase -> return $ Right trainingPhase
@@ -318,20 +317,25 @@ clubsVideosR = mkResourceReader { R.actions = [("upload", upload)]
                                 }
   where
     create :: Handler (ReaderT ClubUuid App)
-    create = mkInputHandler (jsonI . jsonO) $ \publishVideo -> ExceptT $ do
+    create = mkInputHandler (jsonI . jsonO . jsonE) $ \publishVideo -> ExceptT $ do
         clubUuid <- ask
         uuid <- liftIO nextRandom
         now <- liftIO getCurrentTime
-        lift $ runSql $ do
-            let video = Video { videoUuid = uuid
-                              , videoTrainingPhaseUuid = publishVideoTrainingPhaseUuid publishVideo
-                              , videoMemberUuid = publishVideoMemberUuid publishVideo
-                              , videoStatus = Empty
-                              , videoCreated = now
-                              , videoPublished = Nothing
-                              , videoClubUuid = clubUuid }
-            runQuery $ insertUnique video -- TODO: conflictInsert?
-            return $ Right video -- TODO: Fetch video from DB?
+        result <- lift $ runSql $ conflictInsert $
+                      Video { videoUuid = uuid
+                            , videoTrainingPhaseUuid = publishVideoTrainingPhaseUuid publishVideo
+                            , videoMemberUuid = publishVideoMemberUuid publishVideo
+                            , videoStatus = Empty
+                            , videoCreated = now
+                            , videoPublished = Nothing
+                            , videoClubUuid = clubUuid }
+        case result of
+            Right _ -> do
+               mbVideo <- lift $ runSql $ getVideo uuid
+               case mbVideo of
+                   Just video -> return $ Right video
+                   Nothing -> return $ Left NotFound
+            Left e -> return $ Left e
     download :: Handler (ReaderT VideoUuid (ReaderT ClubUuid App))
     download = mkIdHandler fileO $ \() uuid -> ExceptT $ do
         mbVideo <- lift $ lift $ runSql $ getVideo uuid
@@ -363,7 +367,7 @@ clubsVideosR = mkResourceReader { R.actions = [("upload", upload)]
         mbVideo <- lift $ lift $ runSql $ getVideo uuid
         case mbVideo of
             Just _ -> do
-                lift $ lift $ runSql $ runQuery $ delete $ VideoKey uuid
+                lift $ lift $ runSql $ runQuery $ E.deleteKey $ VideoKey uuid
                 return $ Right ()
             Nothing -> return $ Left NotFound
     update :: Handler (ReaderT VideoUuid (ReaderT ClubUuid App))
@@ -373,10 +377,10 @@ clubsVideosR = mkResourceReader { R.actions = [("upload", upload)]
         case mbVideo of
             Just _ -> do
                 lift $ lift $ runSql $ do
-                    runQuery $ Database.Persist.update
-                        (VideoKey uuid)
-                        [ VideoMemberUuid =. publishVideoMemberUuid publishVideo
-                        , VideoTrainingPhaseUuid =. publishVideoTrainingPhaseUuid publishVideo ]
+                    runQuery $ E.update $ \video -> do
+                        E.set video [ VideoMemberUuid E.=. E.val (publishVideoMemberUuid publishVideo)
+                                    , VideoTrainingPhaseUuid E.=. E.val (publishVideoTrainingPhaseUuid publishVideo) ]
+                        E.where_ (video E.^. VideoUuid E.==. E.val uuid)
                     mbVideo <- getVideo uuid
                     case mbVideo of
                         Just video -> return $ Right video
@@ -391,9 +395,9 @@ clubsVideosR = mkResourceReader { R.actions = [("upload", upload)]
                 Empty -> do
                     now <- liftIO getCurrentTime
                     liftIO $ BL.writeFile ("upload/" ++ toString uuid) bytes
-                    lift $ lift $ runSql $ runQuery $ Database.Persist.update
-                        (VideoKey uuid)
-                        [VideoStatus =. Processing]
+                    lift $ lift $ runSql $ runQuery $ E.update $ \video -> do
+                        E.set video [VideoStatus E.=. E.val Processing]
+                        E.where_ (video E.^. VideoUuid E.==. E.val uuid)
                     return $ Right ("" :: String)
                 _ -> return $ Left $ CustomReason $ DomainReason Conflict
             Nothing -> return $ Left NotFound

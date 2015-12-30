@@ -298,7 +298,8 @@ clubsVideosR = mkResourceReader { R.actions = [("upload", upload)]
                                                        , ("team", listingRead VideosByTeam)
                                                        , ("training-phase", listingRead VideosByTrainingPhase)
                                                        , ("instructional", listing InstructionalVideos) ]
-                                , R.selects = [("download", download)]
+                                , R.selects = [ ("download", download)
+                                              , ("poster", poster) ]
                                 }
   where
     create :: Handler (ReaderT ClubUuid App)
@@ -316,7 +317,7 @@ clubsVideosR = mkResourceReader { R.actions = [("upload", upload)]
         case videoStatus <$> mbVideo of
             Just Complete -> do
                 file <- liftIO $ BL.readFile $ "videos/" ++ (toString uuid) ++ ".webm"
-                return $ Right (file, "", False) -- TODO
+                return $ Right (file, "", False) -- TODO (also in "poster")
             _ -> return $ Left NotFound
     get :: Handler (ReaderT VideoUuid (ReaderT ClubUuid App))
     get = mkIdHandler jsonO $ \() uuid -> ExceptT $ do
@@ -328,6 +329,14 @@ clubsVideosR = mkResourceReader { R.actions = [("upload", upload)]
     list accessor = mkListing jsonO $ \_ -> lift $ do -- TODO: rangeOffset, rangeCount
         uuid <- ask
         lift $ runSql $ getVideos uuid accessor
+    poster :: Handler (ReaderT VideoUuid (ReaderT ClubUuid App))
+    poster = mkIdHandler fileO $ \() uuid -> ExceptT $ do
+        mbVideo <- lift $ lift $ runSql $ getVideo uuid
+        case videoStatus <$> mbVideo of
+            Just Complete -> do
+                file <- liftIO $ BL.readFile $ "videos/" ++ (toString uuid) ++ ".jpeg"
+                return $ Right (file, "", False) -- TODO (also in "download")
+            _ -> return $ Left NotFound
     remove :: Handler (ReaderT VideoUuid (ReaderT ClubUuid App))
     remove = mkIdHandler jsonO $ \() uuid -> ExceptT $ do
         mbVideo <- lift $ lift $ runSql $ getVideo uuid

@@ -42,18 +42,33 @@ uploadThread pool = forever $ do
         uploads <- runQuery $ selectList [VideoStatus ==. Processing] []
         forM_ uploads $ \uploadEntity -> do
             let Video uuid _ _ _ _ _ _ = entityVal uploadEntity
-            -- Stereo, 4/5 in Ogg Vorbis quality, 25/50 in video compression
-            exitCode <- liftIO $ system $ "avconv -i " ++
-                            ("upload/" ++ toString uuid) ++
-                            " -ac 2 -aq 4 -threads 2 -qmax 25 " ++
-                            ("videos/" ++ toString uuid ++ ".webm")
-            -- liftIO $ copyFile ("upload/" ++ toString uuid) ("videos/" ++ toString uuid)
-            case exitCode of
+            -- Quality factor of 3, 10 seconds in (putting a "-ss" parameter to
+            -- take the screenshot after a number of seconds will fail to
+            -- produce a screenshot when the video is shorter than the numer of
+            -- seconds; we should use avprobe/ffprobe to query the length of the
+            -- video, probably)
+            exitCodePoster <- liftIO $ system $ "avconv -i " ++
+                                  ("upload/" ++ toString uuid) ++
+                                  " -q:v 3 -vframes 1 " ++
+                                  ("videos/" ++ toString uuid ++ ".jpeg")
+            case exitCodePoster of
                 ExitSuccess -> do
-                    now <- liftIO getCurrentTime
-                    runQuery $ Database.Persist.update
-                        (entityKey uploadEntity)
-                        [VideoPublished =. Just now, VideoStatus =. Complete]
+                    -- Stereo, 4/5 in Ogg Vorbis quality, 25/50 in video compression
+                    exitCodeVideo <- liftIO $ system $ "avconv -i " ++
+                                         ("upload/" ++ toString uuid) ++
+                                         " -ac 2 -aq 4 -threads 2 -qmax 25 " ++
+                                         ("videos/" ++ toString uuid ++ ".webm")
+                    case exitCodeVideo of
+                        ExitSuccess -> do
+                            -- liftIO $ copyFile ("upload/" ++ toString uuid) ("videos/" ++ toString uuid)
+                            now <- liftIO getCurrentTime
+                            runQuery $ Database.Persist.update
+                                (entityKey uploadEntity)
+                                [VideoPublished =. Just now, VideoStatus =. Complete]
+                        ExitFailure _ -> do
+                            runQuery $ Database.Persist.update
+                                (entityKey uploadEntity)
+                                [VideoStatus =. Failure]
                 ExitFailure _ -> do
                     runQuery $ Database.Persist.update
                         (entityKey uploadEntity)

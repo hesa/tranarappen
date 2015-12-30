@@ -1,6 +1,6 @@
 # Test suite stub for the Coachassistant web service
 
-First, install the web browser you want to use with Selenium (Chrome by default) and make sure that the web browser in question accepts the snakeoil certificate that we are currently using.
+First, make sure that Firefox accepts the snakeoil certificate that we are currently using (or switch the Selenium browser in conf.js).
 
 Second, install the Protractor testing framework and get Selenium up and running.
 

@@ -237,9 +237,11 @@ clubsTrainingPhasesR = mkResourceReader { R.create = Just create
         uuid <- liftIO nextRandom
         now <- liftIO getCurrentTime
         lift $ runSql $ do
-            let trainingPhase = TrainingPhase uuid (publishTrainingPhaseName publishTrainingPhase) now clubUuid
-            conflictInsert trainingPhase
-            result <- conflictInsert trainingPhase
+            result <- conflictInsert $
+                TrainingPhase { trainingPhaseUuid = uuid
+                              , trainingPhaseName = publishTrainingPhaseName publishTrainingPhase
+                              , trainingPhaseCreated = now
+                              , trainingPhaseClubUuid = clubUuid }
             case result of
                 Right _ -> do
                     mbTrainingPhase <- getTrainingPhase clubUuid $ Right uuid
@@ -313,7 +315,7 @@ clubsVideosR = mkResourceReader { R.actions = [("upload", upload)]
         mbVideo <- lift $ lift $ runSql $ getVideo uuid
         case videoStatus <$> mbVideo of
             Just Complete -> do
-                file <- liftIO $ BL.readFile $ "videos/" ++ (toString uuid)
+                file <- liftIO $ BL.readFile $ "videos/" ++ (toString uuid) ++ ".webm"
                 return $ Right (file, "", False) -- TODO
             _ -> return $ Left NotFound
     get :: Handler (ReaderT VideoUuid (ReaderT ClubUuid App))

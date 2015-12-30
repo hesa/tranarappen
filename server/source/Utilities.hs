@@ -20,10 +20,10 @@ runQuery a = ask >>= runSqlPool a
 
 -- conflictInsert :: (MonadBaseControl IO m, PersistEntity b, MonadReader (Pool SqlBackend) m, MonadIO m, (~) * (PersistEntityBackend b) SqlBackend) => b -> m (Either (Reason AppError) b)
 conflictInsert e = do
-    result <- runQuery (insertUnique e)
+    result <- runQuery $ insertUnique e
     return $ case result of
         Just _ -> Right e
-        Nothing -> Left (CustomReason (DomainReason Conflict))
+        Nothing -> Left $ CustomReason $ DomainReason Conflict
 
 -- m0 ambigous if commented
 getClubs :: ReaderT ConnectionPool IO [WithMemberUuids (WithTeamUuids (WithTrainingPhaseUuids (WithVideoUuids Club)))]

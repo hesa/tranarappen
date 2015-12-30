@@ -19,7 +19,9 @@ import Database.Persist.Sql
 import Lambdatrade hiding (Conflict)
 import Network.Wai.Handler.Warp
 import Rest.Driver.Wai
-import System.Directory
+-- import System.Directory
+import System.Exit
+import System.Process
 
 import Other
 import Routes
@@ -35,13 +37,24 @@ main = withPool 10 $ \pool -> liftIO $ do
 
 uploadThread :: ConnectionPool -> IO ()
 uploadThread pool = forever $ do
-    threadDelay $ 10 * 10^6
+    threadDelay $ 5 * 10^6
     flip runReaderT pool $ do
         uploads <- runQuery $ selectList [VideoStatus ==. Processing] []
         forM_ uploads $ \uploadEntity -> do
             let Video uuid _ _ _ _ _ _ = entityVal uploadEntity
-            liftIO $ copyFile ("upload/" ++ toString uuid) ("videos/" ++ toString uuid)
-            now <- liftIO getCurrentTime
-            runQuery $ Database.Persist.update
-                (entityKey uploadEntity)
-                [VideoPublished =. Just now, VideoStatus =. Complete]
+            -- Stereo, 4/5 in Ogg Vorbis quality, 25/50 in video compression
+            exitCode <- liftIO $ system $ "avconv -i " ++
+                            ("upload/" ++ toString uuid) ++
+                            " -ac 2 -aq 4 -threads 2 -qmax 25 " ++
+                            ("videos/" ++ toString uuid ++ ".webm")
+            -- liftIO $ copyFile ("upload/" ++ toString uuid) ("videos/" ++ toString uuid)
+            case exitCode of
+                ExitSuccess -> do
+                    now <- liftIO getCurrentTime
+                    runQuery $ Database.Persist.update
+                        (entityKey uploadEntity)
+                        [VideoPublished =. Just now, VideoStatus =. Complete]
+                ExitFailure _ -> do
+                    runQuery $ Database.Persist.update
+                        (entityKey uploadEntity)
+                        [VideoStatus =. Failure]

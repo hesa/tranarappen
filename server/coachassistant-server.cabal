@@ -30,6 +30,7 @@ executable coachassistant-server
                     mtl-compat,
                     persistent >=2,
                     persistent-template,
+                    process,
                     rest-core,
                     rest-wai,
                     text,
@@ -39,3 +40,4 @@ executable coachassistant-server
                     warp
   hs-source-dirs:   source
   default-language: Haskell2010
+  ghc-options:      -threaded

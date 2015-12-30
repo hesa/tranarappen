@@ -39,8 +39,10 @@ clubsR = mkResourceReader { R.create = Just create
     create = mkInputHandler (jsonI . jsonO . jsonE) $ \publishClub -> do
         uuid <- liftIO nextRandom
         now <- liftIO getCurrentTime
-        let club = Club uuid (publishClubName publishClub) now
-        result <- lift $ runSql $ conflictInsert club
+        result <- lift $ runSql $ conflictInsert $
+                      Club { clubUuid = uuid
+                           , clubName = publishClubName publishClub
+                           , clubCreated = now }
         case result of
             Right club -> do
                mbClub <- lift $ runSql $ getClub $ Right uuid
@@ -112,13 +114,23 @@ clubsMembersR = mkResourceReader { R.create = Just create
                                  , R.update = Just update }
   where
     create :: Handler (ReaderT ClubUuid App)
-    create = mkInputHandler (jsonI . jsonO) $ \publishMember -> ExceptT $ do
+    create = mkInputHandler (jsonI . jsonO . jsonE) $ \publishMember -> ExceptT $ do
         clubUuid <- ask
         uuid <- liftIO nextRandom
         now <- liftIO getCurrentTime
-        let member = Member uuid (publishMemberName publishMember) now clubUuid (publishMemberTeamUuid publishMember)
-        lift $ runSql $ runQuery $ insert member
-        return $ Right member
+        result <- lift $ runSql $ conflictInsert $
+                      Member { memberUuid = uuid
+                             , memberName = publishMemberName publishMember
+                             , memberCreated = now
+                             , memberClubUuid = clubUuid
+                             , memberTeamUuid = publishMemberTeamUuid publishMember }
+        case result of
+            Right _ -> do
+                mbMember <- lift $ runSql $ getMember clubUuid $ Right uuid
+                case mbMember of
+                    Just member -> return $ Right member
+                    Nothing -> return $ Left NotFound
+            Left e -> return $ Left e
     get :: Handler (ReaderT MemberUuid (ReaderT ClubUuid App))
     get = mkIdHandler jsonO $ \() uuid -> ExceptT $ do
         clubUuid <- lift ask
@@ -176,8 +188,11 @@ clubsTeamsR = mkResourceReader { R.create = Just create
         uuid <- liftIO nextRandom
         clubUuid <- ask
         now <- liftIO getCurrentTime
-        let team = Team uuid (publishTeamName publishTeam) now clubUuid
-        result <- lift $ runSql $ conflictInsert team
+        result <- lift $ runSql $ conflictInsert $
+                      Team { teamUuid = uuid
+                           , teamName = publishTeamName publishTeam
+                           , teamCreated = now
+                           , teamClubUuid = clubUuid }
         case result of
             Right _ -> do
                 mbTeam <- lift $ runSql $ getTeam clubUuid $ Right uuid
@@ -308,9 +323,15 @@ clubsVideosR = mkResourceReader { R.actions = [("upload", upload)]
         uuid <- liftIO nextRandom
         now <- liftIO getCurrentTime
         lift $ runSql $ do
-            let video = Video uuid (publishVideoTrainingPhaseUuid publishVideo) (publishVideoMemberUuid publishVideo) Empty now Nothing clubUuid
-            runQuery $ insertUnique video
-            return $ Right video
+            let video = Video { videoUuid = uuid
+                              , videoTrainingPhaseUuid = publishVideoTrainingPhaseUuid publishVideo
+                              , videoMemberUuid = publishVideoMemberUuid publishVideo
+                              , videoStatus = Empty
+                              , videoCreated = now
+                              , videoPublished = Nothing
+                              , videoClubUuid = clubUuid }
+            runQuery $ insertUnique video -- TODO: conflictInsert?
+            return $ Right video -- TODO: Fetch video from DB?
     download :: Handler (ReaderT VideoUuid (ReaderT ClubUuid App))
     download = mkIdHandler fileO $ \() uuid -> ExceptT $ do
         mbVideo <- lift $ lift $ runSql $ getVideo uuid

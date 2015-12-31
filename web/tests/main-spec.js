@@ -1,18 +1,60 @@
-// Add a dummy test that tries to add a static club, "IK Nord", and counts that
-// the number of existing clubs is incremented by one.
 describe('Coachassistant', function () {
-    it('allow for adding of clubs', function () {
-        browser.get('https://127.0.0.1/');
+    var clubNames = ['IK Nord', 'Bergsjö IF'];
+    var addedNames = [];
+    var clubsLink = element(by.css('a[ui-sref="clubs"]'));
 
-        var numberOfClubsBefore = element.all(by.css('.list-group-item')).count();
+    browser.get('https://127.0.0.1/');
 
-        element(by.model('clubs.addClubModel.addClubName')).sendKeys('IK Nord');
-        element(by.css('[type="submit"]')).click();
+    it('should allow to create two clubs', function () {
+        clubsLink.click();
 
-        var numberOfClubsAfter = element.all(by.css('.list-group-item')).count();
+        element.all(by.css('.list-group-item')).map(function (club) {
+            return club.getText();
+        }).then(function (clubTexts) {
+            clubNames.forEach(function (clubName) {
+                var modifier = 2;
+                var modifiedName = clubName;
 
-        numberOfClubsBefore.then(function (value) {
-            expect(numberOfClubsAfter).toEqual(value + 1);
+                while (true) {
+                    if (clubTexts.indexOf(modifiedName) === -1) {
+                        break;
+                    } else {
+                        modifiedName = clubName + modifier;
+                        modifier++;
+                    }
+                }
+
+                element(by.model('clubs.addClubModel.addClubName')).sendKeys(modifiedName);
+                element(by.css('button[type="submit"]')).click();
+
+                addedNames.push(modifiedName);
+            });
+        });
+
+        element.all(by.css('.list-group-item')).map(function (club) {
+            return club.getText();
+        }).then(function (clubTexts) {
+            addedNames.forEach(function (addedName) {
+                expect(clubTexts.indexOf(addedName)).not.toEqual(-1);
+            });
+        });
+    });
+
+    it('should allow to select all clubs', function () {
+        clubsLink.click();
+
+        element.all(by.css('.list-group-item')).then(function (clubs) {
+            clubs.forEach(function (club) {
+                club.click().then(function () {
+                    club.getText().then(function (clubText) {
+                        element.all(by.css('a[ui-sref="clubs"] span')).then(function (elements) {
+                            elements[0].getText().then(function (elementText) {
+                                expect(elementText).toEqual('(' + clubText + ')');
+                            });
+                        });
+                    });
+                });
+            });
         });
     });
 });

@@ -32,6 +32,7 @@ executable coachassistant-server
                     persistent-template,
                     process,
                     rest-core,
+                    rest-gen >= 0.17,
                     rest-wai,
                     text,
                     time,

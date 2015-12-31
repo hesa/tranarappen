@@ -19,10 +19,14 @@ import Lambdatrade hiding (Conflict)
 import Network.Wai.Handler.Warp
 import Rest.Driver.Wai
 -- import System.Directory
+import System.Environment
 import System.Exit
 import System.Process
 
 import qualified Database.Esqueleto as E
+import qualified Rest.Gen as G
+import qualified Rest.Gen.Config as G
+
 
 import Other
 import Routes
@@ -30,11 +34,17 @@ import Types
 import Utilities
 
 main :: IO ()
-main = withPool 10 $ \pool -> liftIO $ do
-    runSqlPool (runMigration migrateAll) pool
-    withAsync (uploadThread pool) $ \async -> do
-        link async
-        run 3000 $ apiToApplication (\(App r) -> runReaderT r pool) api
+main = do
+    args <- getArgs
+    case args of
+        ("doc":args') -> withArgs args' doc
+        ("run":_) -> do
+            withPool 10 $ \pool -> liftIO $ do
+                runSqlPool (runMigration migrateAll) pool
+                withAsync (uploadThread pool) $ \async -> do
+                    link async
+                    run 3000 $ apiToApplication (\(App r) -> runReaderT r pool) api
+        _ -> putStrLn "Usage: coachassistant-server (doc -d / -s doc-template -t docs | run)"
 
 uploadThread :: ConnectionPool -> IO ()
 uploadThread pool = forever $ do
@@ -75,3 +85,8 @@ uploadThread pool = forever $ do
                     runQuery $ E.update $ \video -> do
                         E.set video [VideoStatus E.=. E.val Failure]
                         E.where_ (video E.^. VideoUuid E.==. E.val uuid)
+
+doc :: IO ()
+doc = do
+    config <- G.configFromArgs "coachassistant-doc"
+    G.generate config "Coachassistant" api [] [] []

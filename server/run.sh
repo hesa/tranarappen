@@ -10,4 +10,4 @@ sleep 5
 
 echo "Server is running!"
 
-exec coachassistant-server
+exec coachassistant-server run

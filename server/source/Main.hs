@@ -50,7 +50,9 @@ uploadThread :: ConnectionPool -> IO ()
 uploadThread pool = forever $ do
     threadDelay $ 5 * 10^6
     flip runReaderT pool $ do
-        uploads <- runQuery $ E.select $ E.from $ \video -> return video
+        uploads <- runQuery $ E.select $ E.from $ \video -> do
+            E.where_ (video E.^. VideoStatus E.==. E.val Processing)
+            return video
         forM_ uploads $ \uploadEntity -> do
             let uuid = videoUuid $ entityVal uploadEntity
             -- Quality factor of 3, 10 seconds in (putting a "-ss" parameter to

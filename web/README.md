@@ -10,7 +10,9 @@ Install the grunt-cli and jslint packages:
 
     $ sudo npm -g install bower grunt-cli jslint
 
-Install the Node.js dependencies for the project.
+Now, please change the current working directory to this directory.
+
+Proceed to install the Node.js dependencies for the project.
 
     $ npm install
 

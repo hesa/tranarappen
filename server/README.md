@@ -2,6 +2,8 @@
 
 ## Building
 
+First, please change the current working directory to this directory.
+
 Configure the submodule dependency:
 
     $ git submodule init && git submodule update

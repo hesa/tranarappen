@@ -4,7 +4,7 @@
 
 Install Node.js:
 
-    $ sudo apt-get install --yes nodejs nodejs-legacy
+    $ sudo apt-get install --yes nodejs nodejs-legacy npm
 
 Install the grunt-cli and jslint packages:
 

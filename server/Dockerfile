@@ -7,7 +7,7 @@ RUN apt-get -y install libav-tools
 RUN cabal update
 
 COPY ./lambdatrade-common /opt/dependencies/lambdatrade-common
-COPY coachassistant-server.cabal /opt/dependencies/coachassistant-server.cabal
+COPY coachassistant.cabal /opt/dependencies/coachassistant.cabal
 COPY run.sh /app/run.sh
 
 RUN cd /opt/dependencies && cabal --ignore-sandbox install --only-dep . ./lambdatrade-common -j4 --force-reinstall

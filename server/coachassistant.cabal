@@ -1,4 +1,4 @@
-name:          coachassistant-server
+name:          coachassistant
 version:       0.0.0.0
 synopsis:      The server component for coachassistant
 description:   The server component for coachassistant, a software suite
@@ -12,7 +12,7 @@ category:      Sports
 build-type:    Simple
 cabal-version: >=1.10
 
-executable coachassistant-server
+executable coachassistant
   main-is:          Main.hs
   other-modules:    Other, Routes, Types, Utilities
   build-depends:    aeson,

@@ -38,3 +38,6 @@ For rebuilding the project, do the following:
       docker-compose rm --force && \
       docker-compose build && \
       docker-compose up
+
+The grass picture is in the public domain and is taken from
+https://pixabay.com/en/grass-field-football-lawn-green-966410/.

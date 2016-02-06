@@ -29,6 +29,16 @@ The server will now be running at https://localhost/. We're using a snakeoil
 HTTPS certificate that you will likely have to add as an exception to your
 browser's HTTPS settings.
 
+Add a user to the authentication layer like this:
+
+    $ docker exec -it coachassistant_auth-service_1 auth-service adduser email@example.com password "Full Name"
+
+Create the "instance" and give the user access to it:
+
+    $ docker exec -it coachassistant_database_1 psql --user postgres
+    $ insert into instance values ('c1a1501b-f0af-4c2e-b925-a2aad7b61335', 'server');
+    $ insert into user_instance ("user", instance_id) select uuid, 'c1a1501b-f0af-4c2e-b925-a2aad7b61335' from "user";
+
 For rebuilding the project, do the following:
 
     $ cd server

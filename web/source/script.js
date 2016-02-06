@@ -557,7 +557,11 @@
         });
     }]);
 
-    app.run(['$rootScope', '$state', '$window', 'bootstrap3ElementModifier', 'defaultErrorMessageResolver', function ($rootScope, $state, $window, bootstrap3ElementModifier, defaultErrorMessageResolver) {
+    // <auth-service>
+    initializeAuthService(app);
+    // </auth-service>
+
+    app.run(['$http', '$rootScope', '$state', '$window', 'bootstrap3ElementModifier', 'defaultErrorMessageResolver', function ($http, $rootScope, $state, $window, bootstrap3ElementModifier, defaultErrorMessageResolver) {
         bootstrap3ElementModifier.enableValidationStateIcons(true);
         defaultErrorMessageResolver.getErrorMessages().then(function (errorMessages) {
             errorMessages.notUniqueError = 'En entitet med det namnet finns redan';
@@ -569,5 +573,10 @@
         $rootScope.$on('$viewContentLoaded', function () {
             $window.scrollTo(0, 0);
         });
+        $rootScope.logout = function() {
+            // <auth-service>
+            logout($http);
+            // </auth-service>
+        };
     }]);
 }());

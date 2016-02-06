@@ -27,7 +27,6 @@ import qualified Database.Esqueleto as E
 import qualified Rest.Gen as G
 import qualified Rest.Gen.Config as G
 
-
 import Other
 import Routes
 import Types
@@ -43,7 +42,7 @@ main = do
                 runSqlPool (runMigration migrateAll) pool
                 withAsync (uploadThread pool) $ \async -> do
                     link async
-                    run 3000 $ apiToApplication (\(App r) -> runReaderT r pool) api
+                    run 80 $ apiToApplication (\(App r) -> runReaderT r pool) api
         _ -> putStrLn "Usage: coachassistant-server (doc -d / -s doc-template -t docs | run)"
 
 uploadThread :: ConnectionPool -> IO ()

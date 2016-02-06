@@ -12,6 +12,8 @@ category:      Sports
 build-type:    Simple
 cabal-version: >=1.10
 
+-- The conduit and psqueues dependencies are only there for specifying the
+-- versions; transformers should be >= 0.4
 executable coachassistant
   main-is:          Main.hs
   other-modules:    Other, Routes, Types, Utilities
@@ -19,6 +21,7 @@ executable coachassistant
                     async,
                     base >=4.7 && <4.8,
                     bytestring,
+                    conduit ==1.2.6.1,
                     data-default,
                     directory,
                     esqueleto,
@@ -31,12 +34,13 @@ executable coachassistant
                     persistent >=2,
                     persistent-template,
                     process,
+                    psqueues ==0.2.0.3,
                     rest-core,
                     rest-gen >= 0.17,
                     rest-wai,
                     text,
                     time,
-                    transformers >=0.4,
+                    transformers ==0.4.3.0,
                     uuid,
                     warp
   hs-source-dirs:   source

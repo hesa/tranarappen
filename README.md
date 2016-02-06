@@ -17,6 +17,10 @@ following:
     $ systemctl restart firewalld
     $ systemctl restart docker
 
+Add the auth-service to the repository somehow, perhaps like this:
+
+    $ git clone git@github.com:nejla/auth-service.git
+
 Run the project:
 
     $ docker-compose up

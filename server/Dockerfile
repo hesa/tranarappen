@@ -1,5 +1,7 @@
 FROM haskell:7.8
 
+EXPOSE 80
+
 RUN apt-get update
 RUN apt-get -y upgrade
 RUN apt-get -y install libpq-dev netcat

@@ -34,3 +34,30 @@ For rebuilding the project, do the following:
       docker-compose rm --force && \
       docker-compose build && \
       docker-compose up
+
+## Building for deployment
+
+One-time thing to do remotely:
+
+    $ docker create --name=database postgres:9.4
+    $ docker start database
+
+Do this locally:
+
+    $ docker build -t tranarappen-server server
+    $ docker build -t tranarappen-web web
+    $ docker save --output tranarappen-server.tar tranarappen-server:latest
+    $ docker save --output tranarappen-web.tar tranarappen-web:latest
+
+Do this remotely:
+
+    $ docker load < tranarappen-server.tar
+    $ docker load < tranarappen-web.tar
+    $ docker stop tranarappen-web-container
+    $ docker stop tranarappen-server-container
+    $ docker rm tranarappen-web-container
+    $ docker rm tranarappen-server-container
+    $ docker create --name=server --link=database -P tranarappen-server
+    $ docker create --name=web --link=server -p 80:80 -p 443:443 tranarappen-web
+    $ docker start server
+    $ docker start web

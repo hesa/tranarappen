@@ -129,7 +129,7 @@
             templateUrl: 'templates/clubs.html',
             url: '/clubs'
         }).state('members', {
-            controller: ['$http', '$modal', '$scope', 'club', 'coachassistant', 'members', 'teams', function ($http, $modal, $scope, club, coachassistant, members, teams) {
+            controller: ['$http', '$uibModal', '$scope', 'club', 'coachassistant', 'members', 'teams', function ($http, $uibModal, $scope, club, coachassistant, members, teams) {
                 var onModalClose = function () {
                     $http.get('/api/0.0.0/clubs/' + club.uuid + '/members').success(function (result) {
                         $scope.members.members = result.items;
@@ -169,9 +169,9 @@
                     },
                     teams: teams,
                     viewMember: function (member) {
-                        $modal.open({
+                        $uibModal.open({
                             backdrop: 'static',
-                            controller: ['$modalInstance', '$scope', 'coachassistant', 'teams', 'videos', function ($modalInstance, $scope, coachassistant, teams, videos) {
+                            controller: ['$uibModalInstance', '$scope', 'coachassistant', 'teams', 'videos', function ($uibModalInstance, $scope, coachassistant, teams, videos) {
                                 var hackGetTeam = function (teamUuid) {
                                     var i;
 
@@ -188,7 +188,7 @@
 
                                 $scope.member = {
                                     cancel: function () {
-                                        $modalInstance.close();
+                                        $uibModalInstance.close();
                                     },
                                     members: members,
                                     selectedClub: coachassistant.getClub(),
@@ -196,7 +196,7 @@
                                     teams: teams,
                                     update: function () {
                                         $http.put('/api/0.0.0/clubs/' + $scope.member.selectedClub.uuid + '/members/' + $scope.member.member.uuid, { name: $scope.member.updateMemberModel.updateMemberName, teamUuid: $scope.member.updateMemberModel.updateMemberTeam.uuid }).success(function () {
-                                            $modalInstance.close();
+                                            $uibModalInstance.close();
                                         });
                                     },
                                     updateMemberModel: {
@@ -286,7 +286,7 @@
             templateUrl: 'templates/members.html',
             url: '/members'
         }).state('teams', {
-            controller: ['$http', '$modal', '$scope', 'club', 'coachassistant', 'teams', function ($http, $modal, $scope, club, coachassistant, teams) {
+            controller: ['$http', '$uibModal', '$scope', 'club', 'coachassistant', 'teams', function ($http, $uibModal, $scope, club, coachassistant, teams) {
                 var onModalClose = function () {
                     $http.get('/api/0.0.0/clubs/' + club.uuid + '/teams').success(function (result) {
                         $scope.teams.teams = result.items;
@@ -324,12 +324,12 @@
                     selectedClub: club,
                     teams: teams,
                     viewTeam: function (team) {
-                        $modal.open({
+                        $uibModal.open({
                             backdrop: 'static',
-                            controller: ['$modalInstance', '$scope', 'coachassistant', 'members', 'videos', function ($modalInstance, $scope, coachassistant, members, videos) {
+                            controller: ['$uibModalInstance', '$scope', 'coachassistant', 'members', 'videos', function ($uibModalInstance, $scope, coachassistant, members, videos) {
                                 $scope.team = {
                                     cancel: function () {
-                                        $modalInstance.close();
+                                        $uibModalInstance.close();
                                     },
                                     members: members,
                                     selectedClub: coachassistant.getClub(),
@@ -338,7 +338,7 @@
                                         console.log();
                                         console.log();
                                         $http.put('/api/0.0.0/clubs/' + $scope.team.selectedClub.uuid + '/teams/' + $scope.team.team.uuid, { name: $scope.team.updateTeamModel.updateTeamName }).success(function () {
-                                            $modalInstance.close();
+                                            $uibModalInstance.close();
                                         });
                                     },
                                     updateTeamModel: {
@@ -413,7 +413,7 @@
             url: '/teams'
         }).state('trainingPhases', {
             // Semantically a copy of the teams state.
-            controller: ['$http', '$modal', '$scope', 'club', 'coachassistant', 'trainingPhases', function ($http, $modal, $scope, club, coachassistant, trainingPhases) {
+            controller: ['$http', '$uibModal', '$scope', 'club', 'coachassistant', 'trainingPhases', function ($http, $uibModal, $scope, club, coachassistant, trainingPhases) {
                 var onModalClose = function () {
                     $http.get('/api/0.0.0/clubs/' + club.uuid + '/training-phases').success(function (result) {
                         $scope.trainingPhases.trainingPhases = result.items;
@@ -451,12 +451,12 @@
                     selectedClub: club,
                     trainingPhases: trainingPhases,
                     viewTrainingPhase: function (trainingPhase) {
-                        $modal.open({
+                        $uibModal.open({
                             backdrop: 'static',
-                            controller: ['$modalInstance', '$scope', 'coachassistant', 'members', 'videos', function ($modalInstance, $scope, coachassistant, members, videos) {
+                            controller: ['$uibModalInstance', '$scope', 'coachassistant', 'members', 'videos', function ($uibModalInstance, $scope, coachassistant, members, videos) {
                                 $scope.trainingPhase = {
                                     cancel: function () {
-                                        $modalInstance.close();
+                                        $uibModalInstance.close();
                                     },
                                     members: members,
                                     selectedClub: coachassistant.getClub(),
@@ -465,7 +465,7 @@
                                         console.log();
                                         console.log();
                                         $http.put('/api/0.0.0/clubs/' + $scope.trainingPhase.selectedClub.uuid + '/training-phases/' + $scope.trainingPhase.trainingPhase.uuid, { name: $scope.trainingPhase.updateTrainingPhaseModel.updateTrainingPhaseName }).success(function () {
-                                            $modalInstance.close();
+                                            $uibModalInstance.close();
                                         });
                                     },
                                     updateTrainingPhaseModel: {

@@ -7,5 +7,6 @@ COPY snakeoil.key /etc/ssl/snakeoil.key
 COPY snakeoil.crt /etc/ssl/snakeoil.crt
 RUN chmod 400 /etc/ssl/snakeoil.*
 COPY run.sh /app/run.sh
+COPY app /usr/share/nginx/html
 WORKDIR /app
 CMD ["sh", "run.sh"]

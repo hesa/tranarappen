@@ -58,6 +58,6 @@ Do this remotely:
     $ docker rm tranarappen-web-container
     $ docker rm tranarappen-server-container
     $ docker create --name=server --link=database -P tranarappen-server
-    $ docker create --name=web --link=server -p 80:80 -p 443:443 -p 3000:3000 tranarappen-web
+    $ docker create --name=web --link=server -p 80:80 -p 443:443 -p 3000:3000 -v ~/ssl/app.tranarappen.se/server.crt:/etc/ssl/snakeoil.crt -v ~/ssl/app.tranarappen.se/server.key:/etc/ssl/snakeoil.key tranarappen-web
     $ docker start server
     $ docker start web

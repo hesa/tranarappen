@@ -23,6 +23,10 @@ module.exports = function (grunt) {
         copy: {
             main: {
                 files: [{
+                    dest: 'app',
+                    expand: true,
+                    src: 'background.jpg'
+                }, {
                     cwd: 'bower_components/bootstrap-css-only',
                     dest: 'app',
                     expand: true,

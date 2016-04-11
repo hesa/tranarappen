@@ -5,8 +5,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get -y install netcat
 EXPOSE 3000
 
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY snakeoil.key /etc/ssl/snakeoil.key
-COPY snakeoil.crt /etc/ssl/snakeoil.crt
+COPY snakeoil.key /etc/ssl/tranarappen.key
+COPY snakeoil.crt /etc/ssl/tranarappen.crt
 RUN chmod 400 /etc/ssl/snakeoil.*
 COPY run.sh /app/run.sh
 COPY app /usr/share/nginx/html

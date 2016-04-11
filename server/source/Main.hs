@@ -27,7 +27,6 @@ import qualified Database.Esqueleto as E
 import qualified Rest.Gen as G
 import qualified Rest.Gen.Config as G
 
-
 import Other
 import Routes
 import Types

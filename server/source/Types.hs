@@ -105,8 +105,13 @@ instance Schema.JSONSchema AppError where
 instance ToJSON AppError where
     toJSON _ = object []
 
+data VideoStatics = MemberAndTrainingPhase | TeamAndTrainingPhase
+
 data VideoListAccessor = AllVideos
                        | InstructionalVideos
+                       | NonInstructionalVideos
                        | VideosByMember MemberUuid
+                       | VideosByMemberAndTrainingPhase MemberUuid TrainingPhaseUuid
                        | VideosByTeam TeamUuid
+                       | VideosByTeamAndTrainingPhase TeamUuid TrainingPhaseUuid
                        | VideosByTrainingPhase TrainingPhaseUuid

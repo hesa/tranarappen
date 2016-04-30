@@ -6,7 +6,7 @@ until nc -z database 5432; do
 done
 
 echo "Giving PostgreSQL some time to start up..."
-sleep 5
+sleep 10
 
 echo "Server is running!"
 

@@ -4,11 +4,13 @@ import Control.Applicative
 import Control.Monad.Except
 import Control.Monad.IO.Class
 import Control.Monad.Reader
+import Data.Maybe
 import Data.Time.Clock
 import Data.UUID
 import Data.UUID.V4
 import Rest
 import Rest.Api
+import Rest.Dictionary
 
 import qualified Data.ByteString.Lazy as BL
 import qualified Database.Esqueleto as E
@@ -300,7 +302,7 @@ clubsTrainingPhasesR = mkResourceReader { R.create = Just create
                         Nothing -> return $ Left NotFound
             Nothing -> return $ Left NotFound
 
-clubsVideosR :: Resource (ReaderT ClubUuid App) (ReaderT VideoUuid (ReaderT ClubUuid App)) VideoUuid VideoListAccessor Void
+clubsVideosR :: Resource (ReaderT ClubUuid App) (ReaderT VideoUuid (ReaderT ClubUuid App)) VideoUuid VideoListAccessor VideoStatics
 clubsVideosR = mkResourceReader { R.actions = [("upload", upload)]
                                 , R.create = Just create
                                 , R.get = Just get
@@ -309,11 +311,15 @@ clubsVideosR = mkResourceReader { R.actions = [("upload", upload)]
                                 , R.schema = withListing AllVideos $
                                                  named [ ("uuid", singleRead id)
                                                        , ("member", listingRead VideosByMember)
+                                                       , ("member-and-training-phase", static MemberAndTrainingPhase)
+                                                       , ("non-instructional", listing NonInstructionalVideos)
                                                        , ("team", listingRead VideosByTeam)
+                                                       , ("team-and-training-phase", static TeamAndTrainingPhase)
                                                        , ("training-phase", listingRead VideosByTrainingPhase)
                                                        , ("instructional", listing InstructionalVideos) ]
                                 , R.selects = [ ("download", download)
                                               , ("poster", poster) ]
+                                , R.statics = statics
                                 }
   where
     create :: Handler (ReaderT ClubUuid App)
@@ -370,6 +376,23 @@ clubsVideosR = mkResourceReader { R.actions = [("upload", upload)]
                 lift $ lift $ runSql $ runQuery $ E.deleteKey $ VideoKey uuid
                 return $ Right ()
             Nothing -> return $ Left NotFound
+    statics :: VideoStatics -> Handler (ReaderT ClubUuid App)
+    statics MemberAndTrainingPhase = let memberUuidParam = Param ["memberUuid"] (Right . fromJust . fromString . fromJust . head)
+                                         trainingPhaseParam = Param ["trainingPhaseUuid"] (Right . fromJust . fromString . fromJust . head)
+                                         params = memberUuidParam `TwoParams` trainingPhaseParam
+                                     in mkHandler (jsonO . mkPar params) $ \env -> ExceptT $ do
+        let (memberUuid, trainingPhaseUuid) = param env
+        uuid <- ask
+        videos <- lift $ runSql $ getVideos uuid (VideosByMemberAndTrainingPhase memberUuid trainingPhaseUuid)
+        return $ Right videos
+    statics TeamAndTrainingPhase = let teamUuidParam = Param ["teamUuid"] (Right . fromJust . fromString . fromJust . head)
+                                       trainingPhaseParam = Param ["trainingPhaseUuid"] (Right . fromJust . fromString . fromJust . head)
+                                       params = teamUuidParam `TwoParams` trainingPhaseParam
+                                   in mkHandler (jsonO . mkPar params) $ \env -> ExceptT $ do
+        let (teamUuid, trainingPhaseUuid) = param env
+        uuid <- ask
+        videos <- lift $ runSql $ getVideos uuid (VideosByTeamAndTrainingPhase teamUuid trainingPhaseUuid)
+        return $ Right videos
     update :: Handler (ReaderT VideoUuid (ReaderT ClubUuid App))
     update = mkInputHandler (jsonI . jsonO) $ \publishVideo -> ExceptT $ do
         uuid <- ask

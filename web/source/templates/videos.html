@@ -1,5 +1,44 @@
 <div id="videos">
   <div class="page-header"><h1>Filmklipp</h1></div>
-  <div class="page-header"><h2>Se</h2></div>
-  <videogular vg-auto-play="true" vg-theme="videogular.theme.url"><vg-media vg-native-controls="true" vg-src="videogular.sources"></vg-media></videogular>
+  <div class="page-header"><h2>Bläddra</h2></div>
+  <form class="form-horizontal">
+    <div class="form-group row">
+      <div class="col-md-8">
+        <div class="btn-group">
+          <label class="btn btn-success" ng-model="videos.filterMode" uib-btn-radio="'all'" uncheckable>Samtliga medlemmar och lag</label>
+          <label class="btn btn-success" ng-model="videos.filterMode" uib-btn-radio="'member'" uncheckable>Endast medlem...</label>
+          <label class="btn btn-success" ng-model="videos.filterMode" uib-btn-radio="'team'" uncheckable>Endast lag...</label>
+        </div><!--
+        --><ol class="nya-bs-select" ng-if="videos.filterMode == 'member'" ng-model="videos.selectedMember" style="margin-left: 1em;" title="None">
+          <li nya-bs-option="member in videos.members">
+            <a>{{member.name}}</a>
+          </li>
+        </ol><!--
+        --><ol class="nya-bs-select" ng-if="videos.filterMode == 'team'" ng-model="videos.selectedTeam" style="margin-left: 1em;" title="None">
+          <li nya-bs-option="team in videos.teams">
+            <a>{{team.name}}</a>
+          </li>
+        </ol>
+      </div>
+      <label class="col-md-1 control-label" style="text-align: right;">Övning</label>
+      <div class="col-md-3" style="text-align: right;">
+        <ol class="nya-bs-select" ng-model="videos.selectedTrainingPhase" title="None" style="width: 100%;">
+          <li nya-bs-option="trainingPhase in videos.trainingPhases">
+            <a>{{trainingPhase.name}}</a>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </form>
+  <div class="row">
+    <div class="col-md-8">
+      <videogular ng-if="videos.selectedVideo" vg-auto-play="true" vg-theme="videogular.theme.url"><vg-media vg-native-controls="true" vg-src="videogular.sources"></vg-media></videogular>
+    </div>
+    <div class="col-md-4">
+      <uib-alert ng-if="videos.videos.length === 0" type="info">Inga filmklipp hittades.</uib-alert>
+      <div class="list-group" style="cursor: pointer;" ng-if="videos.videos.length > 0">
+        <a class="list-group-item" ng-class="{ 'active': videos.selectedVideo.uuid === video.uuid }" ng-click="videos.selectedVideo = video;" ng-repeat="video in videos.videos">{{video.published | date: "yyyy-MM-dd HH:mm"}}</a>
+      </div>
+    </div>
+  </div>
 </div>

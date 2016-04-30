@@ -48,6 +48,51 @@
             }
 
             return deferred.promise;
+        }],
+        membersResolve = ['$http', '$q', 'club', function ($http, $q, club) {
+            var deferred = $q.defer();
+
+            if (!club) {
+                deferred.reject();
+            } else {
+                $http.get('/api/0.0.0/clubs/' + club.uuid + '/members').success(function (result) {
+                    deferred.resolve(result.items);
+                }).error(function (error) {
+                    deferred.reject(error);
+                });
+            }
+
+            return deferred.promise;
+        }],
+        teamsResolve = ['$http', '$q', 'club', function ($http, $q, club) {
+            var deferred = $q.defer();
+
+            if (!club) {
+                deferred.reject();
+            } else {
+                $http.get('/api/0.0.0/clubs/' + club.uuid + '/teams').success(function (result) {
+                    deferred.resolve(result.items);
+                }).error(function (error) {
+                    deferred.reject(error);
+                });
+            }
+
+            return deferred.promise;
+        }],
+        trainingPhasesResolve = ['$http', '$q', 'club', function ($http, $q, club) {
+            var deferred = $q.defer();
+
+            if (!club) {
+                deferred.reject();
+            } else {
+                $http.get('/api/0.0.0/clubs/' + club.uuid + '/training-phases').success(function (result) {
+                    deferred.resolve(result.items);
+                }).error(function (error) {
+                    deferred.reject(error);
+                });
+            }
+
+            return deferred.promise;
         }];
 
     app.service('coachassistant', Coachassistant);
@@ -260,28 +305,8 @@
             }],
             resolve: {
                 club: clubResolve,
-                members: ['$q', '$http', 'club', function ($q, $http, club) {
-                    var deferred = $q.defer();
-
-                    $http.get('/api/0.0.0/clubs/' + club.uuid + '/members').success(function (result) {
-                        deferred.resolve(result.items);
-                    }).error(function (error) {
-                        deferred.reject(error);
-                    });
-
-                    return deferred.promise;
-                }],
-                teams: ['$q', '$http', 'club', function ($q, $http, club) {
-                    var deferred = $q.defer();
-
-                    $http.get('/api/0.0.0/clubs/' + club.uuid + '/teams').success(function (result) {
-                        deferred.resolve(result.items);
-                    }).error(function (error) {
-                        deferred.reject(error);
-                    });
-
-                    return deferred.promise;
-                }]
+                members: membersResolve,
+                teams: teamsResolve
             },
             templateUrl: 'templates/members.html',
             url: '/members'
@@ -397,17 +422,7 @@
             }],
             resolve: {
                 club: clubResolve,
-                teams: ['$q', '$http', 'club', function ($q, $http, club) {
-                    var deferred = $q.defer();
-
-                    $http.get('/api/0.0.0/clubs/' + club.uuid + '/teams').success(function (result) {
-                        deferred.resolve(result.items);
-                    }).error(function (error) {
-                        deferred.reject(error);
-                    });
-
-                    return deferred.promise;
-                }]
+                teams: teamsResolve
             },
             templateUrl: 'templates/teams.html',
             url: '/teams'
@@ -524,21 +539,11 @@
             }],
             resolve: {
                 club: clubResolve,
-                trainingPhases: ['$q', '$http', 'club', function ($q, $http, club) {
-                    var deferred = $q.defer();
-
-                    $http.get('/api/0.0.0/clubs/' + club.uuid + '/training-phases').success(function (result) {
-                        deferred.resolve(result.items);
-                    }).error(function (error) {
-                        deferred.reject(error);
-                    });
-
-                    return deferred.promise;
-                }]
+                trainingPhases: trainingPhasesResolve
             },
             templateUrl: 'templates/training-phases.html',
             url: '/training-phases'
-        }).state('videos', {
+        }).state('video', {
             controller: ['$sce', '$scope', '$stateParams', 'club', function ($sce, $scope, $stateParams, club) {
                 // Listen to changes to "club" if necessary.
                 $scope.videogular = {
@@ -552,8 +557,111 @@
             resolve: {
                 club: clubResolve
             },
-            templateUrl: 'templates/videos.html',
+            templateUrl: 'templates/video.html',
             url: '/videos/:uuid'
+        }).state('videos', {
+            controller: ['$http', '$sce', '$scope', '$stateParams', 'club', 'members', 'teams', 'trainingPhases', 'videos', function ($http, $sce, $scope, $stateParams, club, members, teams, trainingPhases, videos) {
+                $scope.videos = {
+                    filterMode: 'all',
+                    members: members,
+                    teams: teams,
+                    trainingPhases: trainingPhases,
+                    videos: videos
+                };
+
+                $scope.videos.selectedVideo = null;
+
+                if (videos.length > 0) {
+                    $scope.videos.selectedVideo = videos[0];
+                }
+
+                $scope.videos.selectedMember = null;
+                $scope.videos.selectedTeam = null;
+                $scope.videos.selectedTrainingPhase = null;
+
+                // Listen to changes to "club" if necessary.
+                $scope.videogular = {
+                    preload: 'none',
+                    theme: {
+                        url: 'https://www.videogular.com/styles/themes/default/latest/videogular.css'
+                    }
+                };
+
+                $scope.$watch('videos.selectedVideo', function (video) {
+                    if (video) {
+                        $scope.videogular.sources = [ { src: $sce.trustAsResourceUrl('/api/0.0.0/clubs/' + club.uuid + '/videos/uuid/' + video.uuid + '/download'), type: 'video/webm' } ];
+                    }
+
+                    return true;
+                });
+
+                // 1. Non-instructional
+                // 2. By member
+                // 3. By member and training phase
+                // 4. By team
+                // 5. By team and training phase
+                // 6. By training phase
+                // 7. Do nothing
+                var refreshVideos = function (newValue, oldValue) {
+                    if (newValue !== oldValue) {
+                        if ($scope.videos.filterMode === 'all' && !$scope.videos.selectedTrainingPhase) { // Non-instructional
+                            $http.get('/api/0.0.0/clubs/' + club.uuid + '/videos/non-instructional').success(function (result) {
+                                $scope.videos.videos = result.items;
+                            });
+                        } else if ($scope.videos.filterMode === 'member' && $scope.videos.selectedMember && !$scope.videos.selectedTrainingPhase) { // By member
+                            $http.get('/api/0.0.0/clubs/' + club.uuid + '/videos/member/' + $scope.videos.selectedMember.uuid).success(function (result) {
+                                $scope.videos.videos = result.items;
+                            });
+                        } else if ($scope.videos.filterMode === 'member' && $scope.videos.selectedMember && $scope.videos.selectedTrainingPhase) { // By member and training phase
+                            $http.post('/api/0.0.0/clubs/' + club.uuid + '/videos/member-and-training-phase?memberUuid=' + $scope.videos.selectedMember.uuid + '&trainingPhaseUuid=' + $scope.videos.selectedTrainingPhase.uuid).success(function (result) {
+                                $scope.videos.videos = result.items;
+                            });
+                        } else if ($scope.videos.filterMode === 'team' && $scope.videos.selectedTeam && !$scope.videos.selectedTrainingPhase) { // By team
+                            $http.get('/api/0.0.0/clubs/' + club.uuid + '/videos/team/' + $scope.videos.selectedTeam.uuid).success(function (result) {
+                                $scope.videos.videos = result.items;
+                            });
+                        } else if ($scope.videos.filterMode === 'team' && $scope.videos.selectedTeam && $scope.videos.selectedTrainingPhase) { // By team and training phase
+                            $http.post('/api/0.0.0/clubs/' + club.uuid + '/videos/team-and-training-phase?teamUuid=' + $scope.videos.selectedTeam.uuid + '&trainingPhaseUuid=' + $scope.videos.selectedTrainingPhase.uuid).success(function (result) {
+                                $scope.videos.videos = result.items;
+                            });
+                        } else if ($scope.videos.filterMode === 'all' && $scope.videos.selectedTrainingPhase) { // By training phase
+                            $http.get('/api/0.0.0/clubs/' + club.uuid + '/videos/training-phase/' + $scope.videos.selectedTrainingPhase.uuid).success(function (result) {
+                                $scope.videos.videos = result.items;
+                            });
+                        }
+                    }
+
+                    return true;
+                };
+
+                $scope.$watch('videos.filterMode', refreshVideos);
+                $scope.$watch('videos.selectedMember', refreshVideos);
+                $scope.$watch('videos.selectedTeam', refreshVideos);
+                $scope.$watch('videos.selectedTrainingPhase', refreshVideos);
+            }],
+            resolve: {
+                club: clubResolve,
+                members: membersResolve,
+                teams: teamsResolve,
+                trainingPhases: trainingPhasesResolve,
+                videos: ['club', '$http', '$q', function (club, $http, $q) {
+                    var deferred = $q.defer();
+
+                    if (!club) {
+                        deferred.reject();
+                    }
+
+                    $http.get('/api/0.0.0/clubs/' + club.uuid + '/videos/non-instructional').success(function (result) {
+                        deferred.resolve(result.items);
+                    }).error(function () {
+                        deferred.reject();
+                    });
+
+                    return deferred.promise;
+                }]
+            },
+            templateUrl: 'templates/videos.html',
+            url: '/videos'
         });
     }]);
 

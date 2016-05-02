@@ -87,7 +87,7 @@ Upload the following files to the server (and make sure that ~/ssl/app.tranarapp
 
 1. ~/volumes/nginx-web.conf (web/nginx.conf)
 2. ~/volumes/nginx-router.conf (router/nginx.conf)
-3. ~/volumes/app.conf (web/app)
+3. ~/volumes/app (web/app)
 4. ~/volumes/auth-service.include (auth-service/web/auth-service.include)
 
 ... and do this remotely:

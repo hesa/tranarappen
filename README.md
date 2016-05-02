@@ -95,9 +95,13 @@ Upload the following files to the server (and make sure that ~/ssl/app.tranarapp
     $ docker load < auth-service.tar
     $ docker load < auth-web.tar
     $ docker load < tranarappen-server.tar
+    $ docker stop router
+    $ docker stop web
     $ docker stop server
     $ docker stop auth-web-container
     $ docker stop auth-service-container
+    $ docker rm router
+    $ docker rm web
     $ docker rm server
     $ docker rm auth-service-container
     $ docker rm auth-web-container

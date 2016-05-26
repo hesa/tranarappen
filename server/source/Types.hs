@@ -53,6 +53,7 @@ newtype WithMemberUuids a = WithMemberUuids { unWithMemberUuids :: (WithField "m
 newtype WithTeamUuids a = WithTeamUuids { unWithTeamUuids :: (WithField "teamUuids" [UUID] a) } deriving (FromJSON, Schema.JSONSchema, ToJSON, Typeable)
 newtype WithTrainingPhaseUuids a = WithTrainingPhaseUuids { unWithTrainingPhaseUuids :: (WithField "trainingPhaseUuids" [UUID] a) } deriving (FromJSON, Schema.JSONSchema, ToJSON, Typeable)
 newtype WithVideoUuids a = WithVideoUuids { unWithVideoUuids :: (WithField "videoUuids" [UUID] a) } deriving (FromJSON, Schema.JSONSchema, ToJSON, Typeable)
+newtype WithVideoUuid a = WithVideoUuid { unWithVideoUuid :: (WithField "videoUuid" (Maybe UUID) a) } deriving (FromJSON, Schema.JSONSchema, ToJSON, Typeable)
 
 deriving instance Generic Club
 deriving instance Typeable Club
@@ -87,10 +88,9 @@ type VideoUuid = UUID
 data ClubComposite = ClubComposite { clubCompositeUuid :: !ClubUuid
                                    , clubCompositeName :: !Text
                                    , clubCompositeCreated :: !UTCTime
-                                   , clubCompositeMembers :: ![WithVideoUuids Member]
-                                   , clubCompositeTeams :: ![WithVideoUuids (WithMemberUuids Team)]
-                                   , clubCompositeTrainingPhases :: ![WithVideoUuids TrainingPhase]
-                                   , clubCompositeVideos :: ![Video] }
+                                   , clubCompositeMembers :: ![Member]
+                                   , clubCompositeTeams :: ![WithMemberUuids Team]
+                                   , clubCompositeTrainingPhases :: ![WithVideoUuid TrainingPhase] }
 
 mkGenericJSON [t|ClubComposite|]
 

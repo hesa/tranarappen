@@ -8,6 +8,7 @@ import Data.Maybe
 import Data.Time.Clock
 import Data.UUID
 import Data.UUID.V4
+import Database.Persist.Sql
 import Rest
 import Rest.Api
 import Rest.Dictionary
@@ -60,14 +61,12 @@ clubsR = mkResourceReader { R.create = Just create
                 members <- getMembers uuid Nothing
                 teams <- getTeams uuid
                 trainingPhases <- getTrainingPhases uuid
-                videos <- getVideos uuid AllVideos
                 return $ Right $ ClubComposite { clubCompositeUuid = clubUuid club
                                                , clubCompositeName = clubName club
                                                , clubCompositeCreated = clubCreated club
                                                , clubCompositeMembers = members
                                                , clubCompositeTeams = teams
-                                               , clubCompositeTrainingPhases = trainingPhases
-                                               , clubCompositeVideos = videos }
+                                               , clubCompositeTrainingPhases = trainingPhases }
             Nothing -> return $ Left NotFound
     get :: Handler (ReaderT ClubUuid App)
     get = mkIdHandler jsonO $ \() uuid -> ExceptT $ do

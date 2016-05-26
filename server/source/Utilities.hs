@@ -47,9 +47,9 @@ getClub value = do
             trainingPhases <- getTrainingPhases uuid
             videos <- getVideos uuid AllVideos
             return $ Just $
-                WithMemberUuids $ WithField (map (memberUuid . withFieldBase . unWithVideoUuids) members) $
-                WithTeamUuids $ WithField (map (teamUuid . withFieldBase . unWithMemberUuids . withFieldBase . unWithVideoUuids) teams) $
-                WithTrainingPhaseUuids $ WithField (map (trainingPhaseUuid . withFieldBase . unWithVideoUuids) trainingPhases) $
+                WithMemberUuids $ WithField (map memberUuid members) $
+                WithTeamUuids $ WithField (map (teamUuid . withFieldBase . unWithMemberUuids) teams) $
+                WithTrainingPhaseUuids $ WithField (map (trainingPhaseUuid . withFieldBase . unWithVideoUuid) trainingPhases) $
                 WithVideoUuids $ WithField (map videoUuid videos) club
         Nothing -> return Nothing
 
@@ -62,8 +62,9 @@ getMembers clubUuid mbTeamUuid = do
             Nothing -> return ()
         E.orderBy [E.asc $ member E.^.MemberName]
         return member
-    mbMembers <- forM members $ getMember clubUuid . Left . entityVal
-    return $ catMaybes mbMembers
+    return (map entityVal members)
+    -- mbMembers <- forM members $ getMember clubUuid . Left . entityVal
+    -- return $ catMaybes mbMembers
 
 -- getMember :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => UUID -> Either Member UUID -> m (WithVideoUuids Member)
 getMember clubUuid memberOrUuid = do
@@ -84,9 +85,10 @@ getTeams clubUuid = do
         E.where_ (team E.^. TeamClubUuid E.==. E.val clubUuid)
         E.orderBy [E.asc $ team E.^.TeamName]
         return team
-    mbTeams <- forM teams $ getTeam clubUuid . Left . entityVal
+    mbTeams <- forM teams $ getTeamWithoutVideoUuids clubUuid . Left . entityVal
     return $ catMaybes mbTeams
 
+-- Get team with video UUIDs
 -- getTeam :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => UUID -> Either Team UUID -> m (WithVideoUuids (WithMemberUuids Team))
 getTeam clubUuid teamOrUuid = do
     (uuid, mbTeam) <- case teamOrUuid of
@@ -100,7 +102,22 @@ getTeam clubUuid teamOrUuid = do
             videos <- getVideos clubUuid (VideosByTeam uuid)
             return $ Just $
                 WithVideoUuids $ WithField (map videoUuid videos) $
-                WithMemberUuids $ WithField (map (memberUuid . withFieldBase . unWithVideoUuids) members) team
+                WithMemberUuids $ WithField (map memberUuid members) team
+        Nothing -> return Nothing
+
+-- Get team without VideoUuids
+getTeamWithoutVideoUuids clubUuid teamOrUuid = do
+    (uuid, mbTeam) <- case teamOrUuid of
+        Left team -> return (teamUuid team, Just team)
+        Right uuid -> do
+            mbTeam <- runQuery $ E.get $ TeamKey uuid
+            return (uuid, mbTeam)
+    case mbTeam of
+        Just team -> do
+            members <- getMembers clubUuid (Just uuid)
+            videos <- getVideos clubUuid (VideosByTeam uuid)
+            return $ Just $
+                WithMemberUuids $ WithField (map memberUuid members) team
         Nothing -> return Nothing
 
 -- getTrainingPhases :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => UUID -> m [WithVideoUuids TrainingPhase]
@@ -121,8 +138,8 @@ getTrainingPhase clubUuid trainingPhaseOrUuid = do
             return (uuid, mbTrainingPhase)
     case mbTrainingPhase of
         Just trainingPhase -> do
-            videos <- getVideos clubUuid (VideosByTrainingPhase uuid)
-            return $ Just $ WithVideoUuids $ WithField (map videoUuid videos) trainingPhase
+            video <- getInstructionalVideo clubUuid uuid
+            return $ Just $ WithVideoUuid $ WithField (fmap videoUuid video) trainingPhase
         Nothing -> return Nothing
 
 -- getVideos :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => UUID -> VideoListAccessor -> m [Video]
@@ -150,6 +167,17 @@ getVideos clubUuid accessor = do
         E.orderBy [E.desc $ video E.^. VideoPublished]
         return video
     return $ map entityVal videos
+
+getInstructionalVideo clubUuid trainingPhaseUuid = do
+    videos <- runQuery $ E.select $ E.from $ \video -> do
+        E.where_ (video E.^. VideoStatus E.==. E.val Complete)
+        E.where_ (video E.^. VideoClubUuid E.==. E.val clubUuid)
+        E.where_ (video E.^. VideoTrainingPhaseUuid E.==. E.val trainingPhaseUuid)
+        E.orderBy [E.desc $ video E.^. VideoPublished]
+        return video
+    case videos of
+        [] -> return Nothing
+        v:_ -> return (Just (entityVal v))
 
 -- getVideo :: (MonadBaseControl IO m, MonadReader (Pool SqlBackend) m, MonadIO m) => UUID -> m Video
 getVideo uuid = do

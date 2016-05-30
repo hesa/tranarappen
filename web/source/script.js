@@ -595,6 +595,22 @@
                     return true;
                 });
 
+                var memberName = function (uuid) {
+                    for (var i = 0; i < $scope.videos.members.length; i++) {
+                        if ($scope.videos.members[i].uuid = uuid) {
+                            return $scope.videos.members[i].name;
+                        }
+                    }
+
+                    return 'N/A';
+                };
+
+                var addNamesToVideos = function () {
+                    for (var i = 0; i < $scope.videos.videos.length; i++) {
+                        $scope.videos.videos[i].memberName = memberName($scope.videos.videos[i].memberUuid);
+                    }
+                };
+
                 // 1. Non-instructional
                 // 2. By member
                 // 3. By member and training phase
@@ -607,27 +623,35 @@
                         if ($scope.videos.filterMode === 'all' && !$scope.videos.selectedTrainingPhase) { // Non-instructional
                             $http.get('/api/0.0.0/clubs/' + club.uuid + '/videos/non-instructional').success(function (result) {
                                 $scope.videos.videos = result.items;
+                                addNamesToVideos();
                             });
                         } else if ($scope.videos.filterMode === 'member' && $scope.videos.selectedMember && !$scope.videos.selectedTrainingPhase) { // By member
                             $http.get('/api/0.0.0/clubs/' + club.uuid + '/videos/member/' + $scope.videos.selectedMember.uuid).success(function (result) {
                                 $scope.videos.videos = result.items;
+                                addNamesToVideos();
                             });
                         } else if ($scope.videos.filterMode === 'member' && $scope.videos.selectedMember && $scope.videos.selectedTrainingPhase) { // By member and training phase
                             $http.post('/api/0.0.0/clubs/' + club.uuid + '/videos/member-and-training-phase?memberUuid=' + $scope.videos.selectedMember.uuid + '&trainingPhaseUuid=' + $scope.videos.selectedTrainingPhase.uuid).success(function (result) {
                                 $scope.videos.videos = result.items;
+                                addNamesToVideos();
                             });
                         } else if ($scope.videos.filterMode === 'team' && $scope.videos.selectedTeam && !$scope.videos.selectedTrainingPhase) { // By team
                             $http.get('/api/0.0.0/clubs/' + club.uuid + '/videos/team/' + $scope.videos.selectedTeam.uuid).success(function (result) {
                                 $scope.videos.videos = result.items;
+                                addNamesToVideos();
                             });
                         } else if ($scope.videos.filterMode === 'team' && $scope.videos.selectedTeam && $scope.videos.selectedTrainingPhase) { // By team and training phase
                             $http.post('/api/0.0.0/clubs/' + club.uuid + '/videos/team-and-training-phase?teamUuid=' + $scope.videos.selectedTeam.uuid + '&trainingPhaseUuid=' + $scope.videos.selectedTrainingPhase.uuid).success(function (result) {
                                 $scope.videos.videos = result.items;
+                                addNamesToVideos();
                             });
                         } else if ($scope.videos.filterMode === 'all' && $scope.videos.selectedTrainingPhase) { // By training phase
                             $http.get('/api/0.0.0/clubs/' + club.uuid + '/videos/training-phase/' + $scope.videos.selectedTrainingPhase.uuid).success(function (result) {
                                 $scope.videos.videos = result.items;
+                                addNamesToVideos();
                             });
+                        } else {
+                            addNamesToVideos();
                         }
                     }
 

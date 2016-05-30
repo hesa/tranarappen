@@ -37,7 +37,7 @@
     <div class="col-md-4">
       <uib-alert ng-if="videos.videos.length === 0" type="info">Inga filmklipp hittades.</uib-alert>
       <div class="list-group" style="cursor: pointer;" ng-if="videos.videos.length > 0">
-        <a class="list-group-item" ng-class="{ 'active': videos.selectedVideo.uuid === video.uuid }" ng-click="videos.selectedVideo = video;" ng-repeat="video in videos.videos">{{video.published | date: "yyyy-MM-dd HH:mm"}}</a>
+        <a class="list-group-item" ng-class="{ 'active': videos.selectedVideo.uuid === video.uuid }" ng-click="videos.selectedVideo = video;" ng-repeat="video in videos.videos">{{video.memberName}} ({{video.published | date: "yyyy-MM-dd HH:mm"}})</a>
       </div>
     </div>
   </div>

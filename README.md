@@ -94,6 +94,7 @@ Upload the following files to the server (and make sure that ~/ssl/app.tranarapp
 
     $ docker load < auth-service.tar
     $ docker load < auth-web.tar
+
     $ docker load < tranarappen-server.tar
     $ docker stop router
     $ docker stop web
@@ -110,6 +111,9 @@ Upload the following files to the server (and make sure that ~/ssl/app.tranarapp
     $ docker create --name=auth-web-container --link=auth-service-container:authservice --link=server:c1a1501b-f0af-4c2e-b925-a2aad7b61335 auth-web
     $ docker create --name=web --link=auth-web-container:authweb -v ~/volumes/app:/www -v ~/volumes/nginx-web.conf:/etc/nginx/nginx.conf -v ~/volumes/auth-service.include:/etc/nginx/auth-service.include nginx
     $ docker create --name=router --link=web -v ~/volumes/nginx-router.conf:/etc/nginx/nginx.conf -v ~/ssl/app.tranarappen.se/server.crt:/etc/ssl/tranarappen.crt -v ~/ssl/app.tranarappen.se/server.key:/etc/ssl/tranarappen.key -p 443:443 nginx
+
+Please note that the auth-web-container should have a "client_max_body_size" in the http stanza in /etc/nginx/nginx.conf that mathes the current configuration of the service (otherwise the Nginx default limit will apply, and that's not sufficient for video uploading).
+
     $ docker start server
     $ docker start auth-service-container
     $ docker start auth-web-container

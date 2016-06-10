@@ -32,7 +32,7 @@
   </form>
   <div class="row">
     <div class="col-md-8">
-      <videogular ng-if="videos.selectedVideo" vg-auto-play="true" vg-theme="videogular.theme.url"><vg-media vg-native-controls="true" vg-src="videogular.sources"></vg-media></videogular>
+      <videogular vg-auto-play="true" vg-theme="videogular.theme.url"><vg-media vg-native-controls="true" vg-src="videogular.sources"></vg-media></videogular>
     </div>
     <div class="col-md-4">
       <uib-alert ng-if="videos.videos.length === 0" type="info">Inga filmklipp hittades.</uib-alert>

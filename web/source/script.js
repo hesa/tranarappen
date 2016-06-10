@@ -597,7 +597,7 @@
 
                 var memberName = function (uuid) {
                     for (var i = 0; i < $scope.videos.members.length; i++) {
-                        if ($scope.videos.members[i].uuid = uuid) {
+                        if ($scope.videos.members[i].uuid === uuid) {
                             return $scope.videos.members[i].name;
                         }
                     }
@@ -657,6 +657,8 @@
 
                     return true;
                 };
+
+                addNamesToVideos();
 
                 $scope.$watch('videos.filterMode', refreshVideos);
                 $scope.$watch('videos.selectedMember', refreshVideos);

@@ -333,7 +333,8 @@ clubsVideosR = mkResourceReader { R.actions = [("upload", upload)]
                             , videoStatus = Empty
                             , videoCreated = now
                             , videoPublished = Nothing
-                            , videoClubUuid = clubUuid }
+                            , videoClubUuid = clubUuid
+                            , videoRecorded = publishVideoRecorded publishVideo }
         case result of
             Right _ -> do
                mbVideo <- lift $ runSql $ getVideo uuid

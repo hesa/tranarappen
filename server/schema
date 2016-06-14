@@ -36,6 +36,7 @@ Video
     created UTCTime default=now()
     published UTCTime Maybe
     clubUuid UUID
+    recorded UTCTime
     Primary uuid
     Foreign TrainingPhase trainingPhaseUuidKey trainingPhaseUuid
     Foreign Member memberUuidKey memberUuid

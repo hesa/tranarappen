@@ -31,6 +31,8 @@ Probably easiest done with the following commands:
 
 * file wrong password => should not work
 
+## Login with correct credentials
+
 ## Verify club
 
 * Go to Club information (top menu->Club information)
@@ -49,9 +51,9 @@ Probably easiest done with the following commands:
 
 * Click on each team and verify that the following training phases shall be seen:
 
-** Bogdan
-** Hoppskott
-** Kantavslut
-** Kullager  
-** Stegisättning
+  * Bogdan
+  * Hoppskott
+  * Kantavslut
+  * Kullager  
+  * Stegisättning
 

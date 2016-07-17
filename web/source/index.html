@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html ng-app="coachassistant" ng-controller="CoachassistantController">
+<html ng-app="coachassistant">
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
     <title>Tränarappen</title>
@@ -32,7 +32,6 @@
               <li ui-sref-active="active"><a ui-sref="videos">Filmklipp</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-              <li ui-sref-active="active"><a ui-sref="clubs">Klubbar<span ng-show="coachassistant.selectedClub"> ({{coachassistant.selectedClub.name}})</span></a></li>
               <li><a ng-click="$root.logout()" style="cursor: pointer;">Logga ut</a></li>
             </ul>
           </div>

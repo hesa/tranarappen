@@ -32,8 +32,8 @@
   </form>
   <div class="row">
     <div class="col-md-8">
-      <videogular vg-auto-play="true" vg-theme="videogular.theme.url"><vg-media vg-native-controls="true" vg-src="videogular.sources"></vg-media></videogular>
-      <div style="margin-top: 1em;">
+      <videogular ng-show="videos.selectedVideo.uuid" vg-auto-play="true" vg-theme="videogular.theme.url"><vg-media vg-native-controls="true" vg-src="videogular.sources"></vg-media></videogular>
+      <div ng-show="videos.selectedVideo.uuid" style="margin-top: 1em;">
         <button class="btn btn-danger" ng-click="videos.remove(videos.selectedVideo.uuid)" type="submit">Radera</button>
       </div>
     </div>

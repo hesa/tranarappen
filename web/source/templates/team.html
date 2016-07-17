@@ -12,11 +12,11 @@
     <!-- TODO: Should not use form group here, probably. -->
     <div class="form-group" ng-show="team.videos.length > 0" style="padding: 0px 6px;">
       <label class="control-label">Videoklipp</label>
-      <ol>
-	<li ng-repeat="video in team.videos">
+      <ul>
+	<li ng-repeat="video in team.videos | limitTo: 10">
           <a ng-click="team.cancel()" ui-sref="video({ uuid: video.uuid })">{{video.recorded | date: "yyyy-MM-dd HH:mm"}}</a>
 	</li>
-      </ol>
+      </ul>
     </div>
   </div>
   <div class="modal-footer">

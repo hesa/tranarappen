@@ -6,7 +6,13 @@
     <link href="libs.css" rel="stylesheet" type="text/css" />
     <link href="style.css" rel="stylesheet" type="text/css" />
     <!-- <auth-service> -->
-    <script src="auth-service.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      function logout($http) {
+        $http.post('/api/logout').then(function (result) {
+          window.location.reload(true);
+        });
+      }
+    </script>
     <!-- </auth-service> -->
     <script src="libs.js" type="text/javascript"></script>
     <script src="script.js" type="text/javascript"></script>

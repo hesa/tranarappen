@@ -125,7 +125,7 @@
                                 teams: ['$q', '$http', function ($q, $http) {
                                     var deferred = $q.defer();
 
-                                    $http.get('/api/0.0.0/clubs/' + $scope.members.selectedClub.uuid + '/teams').success(function (result) {
+                                    $http.get('/api/0.0.0/teams').success(function (result) {
                                         deferred.resolve(result.items);
                                     }).error(function (error) {
                                         deferred.reject(error);
@@ -136,7 +136,7 @@
                                 videos: ['$q', '$http', function ($q, $http) {
                                     var deferred = $q.defer();
 
-                                    $http.get('/api/0.0.0/clubs/' + $scope.members.selectedClub.uuid + '/videos/member/' + member.uuid).success(function (result) {
+                                    $http.get('/api/0.0.0/videos/member/' + member.uuid).success(function (result) {
                                         deferred.resolve(result.items);
                                     }).error(function (error) {
                                         deferred.reject(error);
@@ -511,14 +511,17 @@
         });
     }]);
 
-    // <auth-service>
-    initializeAuthService(app);
-    // </auth-service>
-
     app.run(['$http', '$rootScope', '$state', '$window', 'bootstrap3ElementModifier', 'defaultErrorMessageResolver', function ($http, $rootScope, $state, $window, bootstrap3ElementModifier, defaultErrorMessageResolver) {
+        $http({ url: '/api/user-info' }).success(function (data) {
+            $http.defaults.headers.common['X-Instance'] = data.instances[0].id;
+        });
         bootstrap3ElementModifier.enableValidationStateIcons(true);
         defaultErrorMessageResolver.getErrorMessages().then(function (errorMessages) {
             errorMessages.notUniqueError = 'En entitet med det namnet finns redan';
+        });
+        $rootScope.$on('$stateChangeError', function (event) {
+            event.preventDefault();
+            $state.go('teams');
         });
         $rootScope.$on('$viewContentLoaded', function () {
             $window.scrollTo(0, 0);

@@ -34,17 +34,15 @@ import Other
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] $(persistFileWith lowerCaseSettings "schema")
 
-mkGenericJSON [t|Club|]
 mkGenericJSON [t|Member|]
 mkGenericJSON [t|Team|]
 mkGenericJSON [t|TrainingPhase|]
 mkGenericJSON [t|Video|]
 
-mkJsonType ''Club def { derivedPrefix = "publish", removeFields = ["created", "uuid"] }
-mkJsonType ''Member def { derivedPrefix = "publish", removeFields = ["clubUuid", "created", "uuid"] }
-mkJsonType ''Team def { derivedPrefix = "publish", removeFields = ["clubUuid", "created", "uuid"] }
-mkJsonType ''TrainingPhase def { derivedPrefix = "publish", removeFields = ["clubUuid", "created", "uuid"] }
-mkJsonType ''Video def { derivedPrefix = "publish", removeFields = ["clubUuid", "created", "published", "status", "uuid"] }
+mkJsonType ''Member def { derivedPrefix = "publish", removeFields = ["created", "uuid"] }
+mkJsonType ''Team def { derivedPrefix = "publish", removeFields = ["created", "uuid"] }
+mkJsonType ''TrainingPhase def { derivedPrefix = "publish", removeFields = ["created", "uuid"] }
+mkJsonType ''Video def { derivedPrefix = "publish", removeFields = ["created", "published", "status", "uuid"] }
 
 newtype App a = App { unApi :: ReaderT ConnectionPool IO a } deriving (Applicative, Functor, Monad, C.MonadCatch, MonadIO, C.MonadThrow)
 
@@ -55,8 +53,6 @@ newtype WithTrainingPhaseUuids a = WithTrainingPhaseUuids { unWithTrainingPhaseU
 newtype WithVideoUuids a = WithVideoUuids { unWithVideoUuids :: (WithField "videoUuids" [UUID] a) } deriving (FromJSON, Schema.JSONSchema, ToJSON, Typeable)
 newtype WithVideoUuid a = WithVideoUuid { unWithVideoUuid :: (WithField "videoUuid" (Maybe UUID) a) } deriving (FromJSON, Schema.JSONSchema, ToJSON, Typeable)
 
-deriving instance Generic Club
-deriving instance Typeable Club
 deriving instance Generic Member
 deriving instance Typeable Member
 deriving instance Generic Team
@@ -65,8 +61,8 @@ deriving instance Generic TrainingPhase
 deriving instance Typeable TrainingPhase
 deriving instance Generic Video
 deriving instance Typeable Video
-deriving instance Generic ClubComposite
-deriving instance Typeable ClubComposite
+deriving instance Generic Composite
+deriving instance Typeable Composite
 
 deriving instance Generic VideoStatus
 
@@ -79,20 +75,16 @@ instance FromJSON VideoStatus where
 instance Schema.JSONSchema VideoStatus where
     schema = Schema.gSchema
 
-type ClubUuid = UUID
 type MemberUuid = UUID
 type TeamUuid = UUID
 type TrainingPhaseUuid = UUID
 type VideoUuid = UUID
 
-data ClubComposite = ClubComposite { clubCompositeUuid :: !ClubUuid
-                                   , clubCompositeName :: !Text
-                                   , clubCompositeCreated :: !UTCTime
-                                   , clubCompositeMembers :: ![Member]
-                                   , clubCompositeTeams :: ![WithMemberUuids Team]
-                                   , clubCompositeTrainingPhases :: ![WithVideoUuid TrainingPhase] }
+data Composite = Composite { compositeMembers :: ![Member]
+                           , compositeTeams :: ![WithMemberUuids Team]
+                           , compositeTrainingPhases :: ![WithVideoUuid TrainingPhase] }
 
-mkGenericJSON [t|ClubComposite|]
+mkGenericJSON [t|Composite|]
 
 data AppError = Conflict deriving Typeable
 

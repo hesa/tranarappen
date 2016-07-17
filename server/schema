@@ -1,33 +1,21 @@
-Club
-    uuid UUID
-    name Text
-    created UTCTime default=now()
-    Primary uuid
-    UniqueClubName name
 Member
     uuid UUID
     name Text
     created UTCTime default=now()
-    clubUuid UUID
     teamUuid UUID Maybe
     Primary uuid
-    Foreign Club clubUuidKey clubUuid
 Team
     uuid UUID
     name Text
     created UTCTime default=now()
-    clubUuid UUID
     Primary uuid
-    Foreign Club clubUuidKey clubUuid
-    UniqueTeamName name clubUuid
+    UniqueTeamName name
 TrainingPhase
     uuid UUID
     name Text
     created UTCTime default=now()
-    clubUuid UUID
     Primary uuid
-    Foreign Club clubUuidKey clubUuid
-    UniqueTrainingPhaseName name clubUuid
+    UniqueTrainingPhaseName name
 Video
     uuid UUID
     trainingPhaseUuid UUID
@@ -35,9 +23,7 @@ Video
     status VideoStatus
     created UTCTime default=now()
     published UTCTime Maybe
-    clubUuid UUID
     recorded UTCTime
     Primary uuid
     Foreign TrainingPhase trainingPhaseUuidKey trainingPhaseUuid
     Foreign Member memberUuidKey memberUuid
-    Foreign Club clubUuidKey clubUuid

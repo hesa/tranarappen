@@ -307,6 +307,7 @@ clubsVideosR = mkResourceReader { R.actions = [("upload", upload)]
                                 , R.get = Just get
                                 , R.list = list
                                 , R.name = "videos"
+                                , R.remove = Just remove
                                 , R.schema = withListing AllVideos $
                                                  named [ ("uuid", singleRead id)
                                                        , ("member", listingRead VideosByMember)

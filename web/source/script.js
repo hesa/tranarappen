@@ -544,7 +544,7 @@
             templateUrl: 'templates/training-phases.html',
             url: '/training-phases'
         }).state('video', {
-            controller: ['$sce', '$scope', '$stateParams', 'club', function ($sce, $scope, $stateParams, club) {
+            controller: ['$http', '$sce', '$scope', '$stateParams', 'club', function ($http, $sce, $scope, $stateParams, club) {
                 // Listen to changes to "club" if necessary.
                 $scope.videogular = {
                     preload: 'none',
@@ -552,6 +552,12 @@
                     theme: {
                         url: 'https://www.videogular.com/styles/themes/default/latest/videogular.css'
                     }
+                };
+
+                $scope.removeVideo = function () {
+                    $http.delete('/api/0.0.0/clubs/' + club.uuid + '/videos/uuid/' + $stateParams.uuid).success(function (result) {
+                        window.history.back();
+                    });
                 };
             }],
             resolve: {
@@ -564,6 +570,11 @@
                 $scope.videos = {
                     filterMode: 'all',
                     members: members,
+                    remove: function (uuid) {
+                        $http.delete('/api/0.0.0/clubs/' + club.uuid + '/videos/uuid/' + uuid).success(function (result) {
+                            refreshVideos(true, false); // Diff newValue and oldValue to force refresh
+                        });
+                    },
                     teams: teams,
                     trainingPhases: trainingPhases,
                     videos: videos

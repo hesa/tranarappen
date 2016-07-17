@@ -33,6 +33,9 @@
   <div class="row">
     <div class="col-md-8">
       <videogular vg-auto-play="true" vg-theme="videogular.theme.url"><vg-media vg-native-controls="true" vg-src="videogular.sources"></vg-media></videogular>
+      <div style="margin-top: 1em;">
+        <button class="btn btn-danger" ng-click="videos.remove(videos.selectedVideo.uuid)" type="submit">Radera</button>
+      </div>
     </div>
     <div class="col-md-4">
       <uib-alert ng-if="videos.videos.length === 0" type="info">Inga filmklipp hittades.</uib-alert>

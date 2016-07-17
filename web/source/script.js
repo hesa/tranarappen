@@ -632,7 +632,7 @@
                             });
                         } else if ($scope.videos.filterMode === 'member' && $scope.videos.selectedMember && $scope.videos.selectedTrainingPhase) { // By member and training phase
                             $http.post('/api/0.0.0/clubs/' + club.uuid + '/videos/member-and-training-phase?memberUuid=' + $scope.videos.selectedMember.uuid + '&trainingPhaseUuid=' + $scope.videos.selectedTrainingPhase.uuid).success(function (result) {
-                                $scope.videos.videos = result.items;
+                                $scope.videos.videos = result; // Abstraction leak
                                 addNamesToVideos();
                             });
                         } else if ($scope.videos.filterMode === 'team' && $scope.videos.selectedTeam && !$scope.videos.selectedTrainingPhase) { // By team
@@ -642,7 +642,7 @@
                             });
                         } else if ($scope.videos.filterMode === 'team' && $scope.videos.selectedTeam && $scope.videos.selectedTrainingPhase) { // By team and training phase
                             $http.post('/api/0.0.0/clubs/' + club.uuid + '/videos/team-and-training-phase?teamUuid=' + $scope.videos.selectedTeam.uuid + '&trainingPhaseUuid=' + $scope.videos.selectedTrainingPhase.uuid).success(function (result) {
-                                $scope.videos.videos = result.items;
+                                $scope.videos.videos = result; // Abstraction leak
                                 addNamesToVideos();
                             });
                         } else if ($scope.videos.filterMode === 'all' && $scope.videos.selectedTrainingPhase) { // By training phase

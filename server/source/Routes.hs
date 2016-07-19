@@ -30,7 +30,8 @@ router = root -/ route compositeR
 
 compositeR :: Resource App (ReaderT () App) () Void Void
 compositeR = mkResourceReader { R.get = Just get
-                              , R.name = "composite" }
+                              , R.name = "composite"
+                              , R.schema = singleton () $ named [] }
   where
     get :: Handler (ReaderT () App)
     get = mkInputHandler jsonO $ \_ -> ExceptT $ lift $ runSql $ do

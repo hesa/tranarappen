@@ -116,19 +116,26 @@ getVideos accessor = do
             AllVideos -> return ()
             InstructionalVideos -> E.where_ $ E.isNothing $ video E.^.VideoMemberUuid
             NonInstructionalVideos -> E.where_ $ E.not_ $ E.isNothing $ video E.^.VideoMemberUuid
-            VideosByMember memberUuid -> E.where_ $ video E.^. VideoMemberUuid E.==. E.val (Just memberUuid)
+            VideosByMember memberUuid -> do
+                E.where_ $ E.not_ $ E.isNothing $ video E.^.VideoMemberUuid
+                E.where_ $ video E.^. VideoMemberUuid E.==. E.val (Just memberUuid)
             VideosByMemberAndTrainingPhase memberUuid trainingPhaseUuid -> do
+                E.where_ $ E.not_ $ E.isNothing $ video E.^.VideoMemberUuid
                 E.where_ $ video E.^. VideoMemberUuid E.==. E.val (Just memberUuid)
                 E.where_ $ video E.^. VideoTrainingPhaseUuid E.==. E.val trainingPhaseUuid
             VideosByTeam teamUuid -> E.where_ $ E.exists . E.from $ \member -> do
+                E.where_ $ E.not_ $ E.isNothing $ video E.^.VideoMemberUuid
                 E.where_ $ member E.^. MemberTeamUuid E.==. E.val (Just teamUuid)
                 E.where_ $ video E.^. VideoMemberUuid E.==. E.just (member E.^. MemberUuid)
             VideosByTeamAndTrainingPhase teamUuid trainingPhaseUuid -> do
+                E.where_ $ E.not_ $ E.isNothing $ video E.^.VideoMemberUuid
                 E.where_ $ E.exists . E.from $ \member -> do
                     E.where_ $ member E.^. MemberTeamUuid E.==. E.val (Just teamUuid)
                     E.where_ $ video E.^. VideoMemberUuid E.==. E.just (member E.^. MemberUuid)
                 E.where_ $ video E.^. VideoTrainingPhaseUuid E.==. E.val trainingPhaseUuid
-            VideosByTrainingPhase trainingPhaseUuid -> E.where_ $ video E.^. VideoTrainingPhaseUuid E.==. E.val trainingPhaseUuid
+            VideosByTrainingPhase trainingPhaseUuid -> do
+                E.where_ $ E.not_ $ E.isNothing $ video E.^.VideoMemberUuid
+                E.where_ $ video E.^. VideoTrainingPhaseUuid E.==. E.val trainingPhaseUuid
         E.orderBy [E.desc $ video E.^. VideoPublished]
         return video
     return $ map entityVal videos

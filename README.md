@@ -1,21 +1,10 @@
 # coachassistant
 
-A software suite to assist coaches/instructors during actual training.
+A software suite to assist instructors with coaching.
 
 ## Building and running
 
 Docker needs to be installed.
-
-First, build the server and web projects by following the instructions in the
-respective README files in the "server" and "web" directories.
-
-On Fedora 22, it might be necessary to configure/disable SELinux and do the
-following:
-
-    $ sudo firewall-cmd --permanent --zone=public --add-interface=docker0
-    $ sudo firewall-cmd --permanent --zone=public --add-masquerade
-    $ systemctl restart firewalld
-    $ systemctl restart docker
 
 Configure the submodules:
 
@@ -66,6 +55,9 @@ For rebuilding the project, do the following:
       docker-compose rm --force && \
       docker-compose build && \
       docker-compose up
+
+To configure the marketing web site, Bootstrap should be downloaded and
+installed in (the default) css, fonts and js directories, in ./marketing.
 
 ## Building for deployment
 
@@ -122,49 +114,43 @@ Please note that the auth-web-container should have a "client_max_body_size" in 
 
 ## API example using Curl
 
-Let's start by adding a club:
+Before you can start to use the API, you will need to authenticate and acquire a token and the instance identifier. This is done like [this](https://github.com/nejla/auth-service#api). The token should be sent using the <code>X-Token</code> header, and the instance identifier should be sent using the <code>X-Instance</code> header. The instance identifier correlate to a club.
 
-    curl --data '{ "name": "Bergsjö IF" }' --header "Content-Type: application/json" --request POST localhost:3000/0.0.0/clubs
-
-Note that the service generates a UUID identifier for the club in the response:
-
-    {"uuid":"5f7e5a88-68bc-4581-8103-c8b2effc373d","created":"2015-09-03T15:28:01.016843000000Z","teamUuids":[],"memberUuids":[],"trainingPhaseUuids":[],"videoUuids":[],"name":"Bergsjö IF"}
-
-We will use this identifier to below.
+To make the example requests below shorter, it's assumed that you are including the token and the instance identifier, like so: <code>--header "X-Instance: ..." --header "X-Token: ..."</code>.
 
 First, let's add two teams.
 
-    curl --data '{ "name": "P05" }' --header "Content-Type: application/json" --request POST localhost:3000/0.0.0/clubs/5f7e5a88-68bc-4581-8103-c8b2effc373d/teams
-    curl --data '{ "name": "F05" }' --header "Content-Type: application/json" --request POST localhost:3000/0.0.0/clubs/5f7e5a88-68bc-4581-8103-c8b2effc373d/teams
+    curl --data '{ "name": "P05" }' --header "Content-Type: application/json" --header "X-Instance: ..." --header "X-Token: ..." --request POST https://app.tranarappen.se/0.0.0/teams
+    curl --data '{ "name": "F05" }' --header "Content-Type: application/json" --header "X-Instance: ..." --header "X-Token: ..." --request POST https://app.tranarappen.se/0.0.0/teams
 
 We can then inspect the teams of the club:
 
-    curl --request GET localhost:3000/0.0.0/clubs/5f7e5a88-68bc-4581-8103-c8b2effc373d/teams
+    curl --request GET https://app.tranarappen.se/0.0.0/teams
 
 We can also fetch an individual team directly:
 
-    curl --request GET localhost:3000/0.0.0/clubs/5f7e5a88-68bc-4581-8103-c8b2effc373d/teams/1aa45de7-6ff0-4414-adfe-a645be7d4f98
+    curl --request GET https://app.tranarappen.se/0.0.0/teams/1aa45de7-6ff0-4414-adfe-a645be7d4f98
 
 We can also update a team:
 
-    curl --data '{ "name": "P06" }' --header "Content-Type: application/json" --request PUT localhost:3000/0.0.0/clubs/5f7e5a88-68bc-4581-8103-c8b2effc373d/teams/4bc5bcbc-b837-40c4-8f47-3a855b11ce8a
+    curl --data '{ "name": "P06" }' --header "Content-Type: application/json" --request PUT https://app.tranarappen.se/0.0.0/teams/4bc5bcbc-b837-40c4-8f47-3a855b11ce8a
 
 Or delete a team:
 
-    curl --request DELETE localhost:3000/0.0.0/clubs/5f7e5a88-68bc-4581-8103-c8b2effc373d/teams/1aa45de7-6ff0-4414-adfe-a645be7d4f98
+    curl --request DELETE https://app.tranarappen.se/0.0.0/teams/1aa45de7-6ff0-4414-adfe-a645be7d4f98
 
 Analogously, we can work with members related to the club (not that the <code>teamUuid</code> field is optional):
 
-    curl --data '{ "name": "Henrik" }' --header "Content-Type: application/json" --request POST localhost:3000/0.0.0/clubs/5f7e5a88-68bc-4581-8103-c8b2effc373d/members
-    curl --data '{ "name": "Jon", "teamUuid": "4bc5bcbc-b837-40c4-8f47-3a855b11ce8a" }' --header "Content-Type: application/json" --request POST localhost:3000/0.0.0/clubs/5f7e5a88-68bc-4581-8103-c8b2effc373d/members
+    curl --data '{ "name": "Henrik" }' --header "Content-Type: application/json" --request POST https://app.tranarappen.se/0.0.0/members
+    curl --data '{ "name": "Jon", "teamUuid": "4bc5bcbc-b837-40c4-8f47-3a855b11ce8a" }' --header "Content-Type: application/json" --request POST https://app.tranarappen.se/0.0.0/members
 
 Training phases can also be added:
 
-    curl --data '{ "name": "Slå Henrik i armhävningar" }' --header "Content-Type: application/json" --request POST localhost:3000/0.0.0/clubs/5f7e5a88-68bc-4581-8103-c8b2effc373d/training-phases
+    curl --data '{ "name": "Slå Henrik i armhävningar" }' --header "Content-Type: application/json" --request POST https://app.tranarappen.se/0.0.0/training-phases
 
 Finally, in order to allow for effective synchronization of club-related information, a special composite endpoint is offered:
 
-    curl --request GET localhost:3000/0.0.0/5f7e5a88-68bc-4581-8103-c8b2effc373d/composite
+    curl --request GET https://app.tranarappen.se/0.0.0/5f7e5a88-68bc-4581-8103-c8b2effc373d/composite
 
 The output of this will look something like this:
 
@@ -181,7 +167,6 @@ The output of this will look something like this:
                 [
                 ],
                 "name": "Henrik",
-                "clubUuid": "4bdafb08-d8a5-40e2-83c6-f78f206f9e0f",
                 "teamUuid": "e02897a1-adb2-4e61-bcd3-2846f6eeb7fe"
             },
             {
@@ -191,7 +176,6 @@ The output of this will look something like this:
                 [
                 ],
                 "name": "Jon",
-                "clubUuid": "4bdafb08-d8a5-40e2-83c6-f78f206f9e0f",
                 "teamUuid": "70d1d759-2238-4d21-95c5-6c63d7d9ab22"
             }
         ],
@@ -207,8 +191,7 @@ The output of this will look something like this:
                 "videoUuids":
                 [
                 ],
-                "name": "F10",
-                "clubUuid": "4bdafb08-d8a5-40e2-83c6-f78f206f9e0f"
+                "name": "F10"
             },
             {
                 "uuid": "e02897a1-adb2-4e61-bcd3-2846f6eeb7fe",
@@ -220,8 +203,7 @@ The output of this will look something like this:
                 "videoUuids":
                 [
                 ],
-                "name": "P10",
-                "clubUuid": "4bdafb08-d8a5-40e2-83c6-f78f206f9e0f"
+                "name": "P10"
             }
         ],
         "trainingPhases":
@@ -232,8 +214,7 @@ The output of this will look something like this:
                 "videoUuids":
                 [
                 ],
-                "name": "Armhävningar",
-                "clubUuid": "4bdafb08-d8a5-40e2-83c6-f78f206f9e0f"
+                "name": "Armhävningar"
             },
             {
                 "uuid": "63603cc4-d0be-4cca-b5a9-8099957660ce",
@@ -241,16 +222,64 @@ The output of this will look something like this:
                 "videoUuids":
                 [
                 ],
-                "name": "Uppvärmning",
-                "clubUuid": "4bdafb08-d8a5-40e2-83c6-f78f206f9e0f"
+                "name": "Uppvärmning"
             }
-        ],
-        "name": "Bergsjö IF",
-	"uuid":"5f7e5a88-68bc-4581-8103-c8b2effc373d",
-	"created":"2015-09-03T15:28:01.016843000000Z"
+        ]
     }
+
+Uploading a video starts with defining the metadata of the video. The "recorded" field needs to contain the time when the video was recorded, in the format of an "ISO string". The training phase also need to be provided. The member identifier ("memberUuid") is optional - if it's absent, the system considers the video to be an instructional video.
+
+    $ curl --data "{ \"recorded\": \"2015-12-29T19:31:12.081528Z\", \"trainingPhaseUuid\": \"bd59ad1d-6c64-4d2b-a5f2-108c8ec5b931\" }" --header "Content-Type: application/json" --request POST https://app.tranarappen.se/0.0.0/videos
+    {"status":"empty","uuid":"eb0a50fe-a585-4d88-a37a-268a01d7a528","created":"2015-12-30T02:47:38.058862Z","recorded":"2015-12-29T19:31:12.081528Z","trainingPhaseUuid":"bd59ad1d-6c64-4d2b-a5f2-108c8ec5b931"}
+
+For brevity, we'll save the video UUID in an environment variable.
+
+    $ export VIDEO_UUID=eb0a50fe-a585-4d88-a37a-268a01d7a528
+
+At this point, the video exists, but since it doesn't have any video data associated with it, it won't be visible on the site (it's "empty"). However, since we know the video identifier, we can query the video metadata like so:
+
+    $ curl --header "Content-Type: application/json" https://app.tranarappen.se/0.0.0/videos/uuid/$VIDEO_UUID
+    {"status":"empty","uuid":"eb0a50fe-a585-4d88-a37a-268a01d7a528","created":"2015-12-30T02:47:38.058862Z","trainingPhaseUuid":"bd59ad1d-6c64-4d2b-a5f2-108c8ec5b931"}
+
+Now, let's upload some video data:
+
+    $ curl --data-binary @sample.3gp --insecure --request POST https://app.tranarappen.se/api/0.0.0/videos/uuid/$VIDEO_UUID/upload
+
+The API will now begin processing the video data into our desired format (WebM). If we repeat the GET request performed above, we can see that the status of the video now is "processing". This can be the basis to, for instance, show a loading animation in the client.
+
+    $ curl --header "Content-Type: application/json" https://app.tranarappen.se/0.0.0/videos/uuid/$VIDEO_UUID
+    {"status":"processing","uuid":"eb0a50fe-a585-4d88-a37a-268a01d7a528","created":"2015-12-30T02:47:38.058862Z","trainingPhaseUuid":"bd59ad1d-6c64-4d2b-a5f2-108c8ec5b931"}
+
+The video file, around 30 MB, took between two and three minutes to process on my machine. However, since this happens in a separate thread, the API was still responsive during that time.
+
+Once the video has finished processing, the status will changed to "complete" (unless Ffmpeg finishes with a non-zero exit code, in which case it will change to "failure"):
+
+    $ curl --header "Content-Type: application/json" https://app.tranarappen.se/0.0.0/videos/uuid/$VIDEO_UUID
+    {"status":"complete","uuid":"eb0a50fe-a585-4d88-a37a-268a01d7a528","created":"2015-12-30T02:47:38.058862Z","published":"2015-12-30T02:51:03.262879Z","trainingPhaseUuid":"bd59ad1d-6c64-4d2b-a5f2-108c8ec5b931"}
+
+We can now download the video with a simple GET request.
+
+    $ curl --insecure -o sample.webm https://app.tranarappen.se/api/0.0.0/videos/uuid/$VIDEO_UUID/download
+
+It's also possible to download a poster of the video:
+
+    $ curl --insecure -o sample.jpeg https://app.tranarappen.se/api/0.0.0/videos/uuid/$VIDEO_UUID/poster
+
+Training phase objects will include the video identifier for the training phase in question.
+
+Also, videos can be filtered in one of the following ways:
+
+* By member
+* By member and training phase
+* By team
+* By team and training phase
+* By training phase (not showing instructional videos)
+* By whether the video is instructional
 
 ## Legal
 
 The grass picture is in the public domain and is taken from
 https://pixabay.com/en/grass-field-football-lawn-green-966410/.
+
+The soccer screenshot in marketing/screenshots.png is in the public domain and
+is taken from <https://pixabay.com/en/football-ball-sport-soccer-play-452569/>.

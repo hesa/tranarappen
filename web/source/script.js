@@ -366,7 +366,7 @@
             controller: ['$http', '$sce', '$scope', '$stateParams', function ($http, $sce, $scope, $stateParams) {
                 $scope.videogular = {
                     preload: 'none',
-                    sources: [ { src: $sce.trustAsResourceUrl('/api/0.0.0/videos/uuid/' + $stateParams.uuid + '/download'), type: 'video/webm' } ],
+                    sources: [ { src: $sce.trustAsResourceUrl('/api/download/' + $http.defaults.headers.common['X-Instance'] + '/' + $stateParams.uuid), type: 'video/webm' } ],
                     theme: {
                         url: 'https://www.videogular.com/styles/themes/default/latest/videogular.css'
                     }
@@ -414,7 +414,7 @@
 
                 $scope.$watch('videos.selectedVideo', function (video) {
                     if (video) {
-                        $scope.videogular.sources = [ { src: $sce.trustAsResourceUrl('/api/0.0.0/videos/uuid/' + video.uuid + '/download'), type: 'video/webm' } ];
+                        $scope.videogular.sources = [ { src: $sce.trustAsResourceUrl('/api/download/' + $http.defaults.headers.common['X-Instance'] + '/' + video.uuid), type: 'video/webm' } ];
                     }
 
                     return true;

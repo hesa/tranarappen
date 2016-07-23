@@ -28,7 +28,7 @@ executable coachassistant
                     exceptions,
                     generic-aeson,
                     json-schema,
-                    lambdatrade-common,
+                    nejla-common,
                     mtl,
                     mtl-compat,
                     persistent >=2,

@@ -15,7 +15,7 @@ import Control.Monad.Reader
 import Data.Time.Clock
 import Data.UUID
 import Database.Persist.Sql
-import Lambdatrade hiding (Conflict)
+import NejlaCommon
 import Network.Wai.Handler.Warp
 import Rest.Driver.Wai
 -- import System.Directory

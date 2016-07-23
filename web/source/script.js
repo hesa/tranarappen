@@ -36,8 +36,6 @@
             return deferred.promise;
         }];
 
-    app.service('lambdatrade', LambdatradeCommon);
-
     app.config(['$stateProvider', '$urlRouterProvider', function ($stateProvider, $urlRouterProvider) {
         $urlRouterProvider.otherwise('/teams');
 

@@ -3,7 +3,7 @@ module Utilities where
 import Control.Monad.Reader
 import Data.Maybe
 import Database.Persist.Sql
-import Lambdatrade hiding (Conflict)
+import NejlaCommon
 import Rest
 
 import qualified Database.Esqueleto as E

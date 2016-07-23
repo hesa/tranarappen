@@ -22,7 +22,7 @@ import Database.Persist.Sql
 import Database.Persist.TH
 import Generics.Generic.Aeson
 import GHC.Generics
-import Lambdatrade hiding (Conflict)
+import NejlaCommon
 import Rest
 
 import Data.Text (Text)

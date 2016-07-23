@@ -17,7 +17,7 @@ module.exports = function (grunt) {
         concat: {
             script: {
                 dest: 'app/script.js',
-                src: ['lambdatrade.js', 'source/script.js']
+                src: ['source/script.js']
             }
         },
         copy: {
@@ -58,7 +58,7 @@ module.exports = function (grunt) {
             main: {
                 directives: {
                     browser: true,
-                    predef: ['angular', 'console', 'LambdatradeCommon', 'module']
+                    predef: ['angular', 'console', 'module']
                 },
                 src: ['Gruntfile.js', 'source/**/*.js']
             }

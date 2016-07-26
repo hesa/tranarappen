@@ -35,7 +35,7 @@ executable coachassistant
                     persistent-template,
                     process,
                     psqueues ==0.2.0.3,
-                    rest-core,
+                    rest-core == 0.38,
                     rest-gen >= 0.17,
                     rest-wai,
                     text,

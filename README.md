@@ -98,7 +98,7 @@ Upload the following files to the server (and make sure that ~/ssl/app.tranarapp
     $ docker rm server
     $ docker rm auth-service-container
     $ docker rm auth-web-container
-    $ docker create --name=server --link=database tranarappen-server
+    $ docker create --name=server --link=database -v `pwd`/volumes/upload:/app/upload -v `pwd`/volumes/videos:/app/videos tranarappen-server
     $ docker create --name=auth-service-container --link=database auth-service
     $ docker create --name=auth-web-container --link=auth-service-container:authservice --link=server:c1a1501b-f0af-4c2e-b925-a2aad7b61335 auth-web
     $ docker create --name=web --link=auth-web-container:authweb -v ~/volumes/app:/www -v ~/volumes/nginx-web.conf:/etc/nginx/nginx.conf -v ~/volumes/auth-service.include:/etc/nginx/auth-service.include nginx

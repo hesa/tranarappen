@@ -59,16 +59,16 @@ uploadThread pool = forever $ do
             -- produce a screenshot when the video is shorter than the numer of
             -- seconds; we should use avprobe/ffprobe to query the length of the
             -- video, probably)
-            exitCodePoster <- liftIO $ system $ "avconv -i " ++
+            exitCodePoster <- liftIO $ system $ "ffmpeg -i " ++
                                   ("upload/" ++ toString uuid) ++
                                   " -q:v 3 -vframes 1 " ++
                                   ("videos/" ++ toString uuid ++ ".jpeg")
             case exitCodePoster of
                 ExitSuccess -> do
-                    -- Stereo, 4/5 in Ogg Vorbis quality, 25/50 in video compression
-                    exitCodeVideo <- liftIO $ system $ "avconv -i " ++
+                    -- Stereo and 25/50 in video compression
+                    exitCodeVideo <- liftIO $ system $ "ffmpeg -i " ++
                                          ("upload/" ++ toString uuid) ++
-                                         " -ac 2 -aq 4 -threads 2 -qmax 25 " ++
+                                         " -ac 2 -threads 2 -qmax 25 " ++
                                          ("videos/" ++ toString uuid ++ ".webm")
                     case exitCodeVideo of
                         ExitSuccess -> do

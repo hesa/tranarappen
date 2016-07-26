@@ -2,10 +2,10 @@ FROM haskell:7.8
 
 EXPOSE 80
 
+RUN echo "deb http://ftp.debian.org/debian jessie-backports main contrib non-free" >> /etc/apt/sources.list
 RUN apt-get update
 RUN apt-get -y upgrade
-RUN apt-get -y install libpq-dev netcat
-RUN apt-get -y install libav-tools
+RUN apt-get -y install ffmpeg libpq-dev netcat
 RUN cabal update
 
 COPY ./nejla-common /opt/dependencies/nejla-common

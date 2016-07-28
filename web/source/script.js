@@ -512,6 +512,7 @@
     app.run(['$http', '$rootScope', '$state', '$window', 'bootstrap3ElementModifier', 'defaultErrorMessageResolver', function ($http, $rootScope, $state, $window, bootstrap3ElementModifier, defaultErrorMessageResolver) {
         $http({ url: '/api/user-info' }).success(function (data) {
             $http.defaults.headers.common['X-Instance'] = data.instances[0].id;
+            $rootScope.club = data.instances[0].name;
         });
         bootstrap3ElementModifier.enableValidationStateIcons(true);
         defaultErrorMessageResolver.getErrorMessages().then(function (errorMessages) {

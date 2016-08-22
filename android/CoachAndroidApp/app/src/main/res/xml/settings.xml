@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+    android:key="wifi-sync-only"
+    android:title="@string/wifi_sync"
+    android:summary="@string/wifi_syn_summ"
+    android:defaultValue="true" />
+
+    <EditTextPreference
+        android:key="video-record-time"
+        android:title="@string/video_record_text"
+        android:summary="@string/video_record_summ"
+        android:numeric="integer"
+        android:defaultValue="5" />
+
+    <EditTextPreference
+        android:key="log-message-limit"
+        android:title="@string/log_limit_text"
+        android:summary="@string/log_limit_summ"
+        android:numeric="integer"
+        android:defaultValue="100" />
+
+    <EditTextPreference
+        android:key="network_timeout"
+        android:title="@string/network_timeout"
+        android:summary="@string/network_timeout_summ"
+        android:numeric="integer"
+        android:defaultValue="5000" />
+
+</PreferenceScreen>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context="com.sandklef.coachapp.activities.ClubInfoActivity">
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:text="Club information"
+            android:textStyle="bold"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <!--
+        <TextView
+            android:id="@+id/club_names"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+         -->
+
+        <TextView
+            android:id="@+id/club_name"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/teams_info"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/trainingphases_info"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/members_info"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:text="Media"
+            android:textStyle="bold"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/local_media_info"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/server_media_info"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/deletable_media_info"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/instructional_media_info"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:text="Teams"
+            android:textStyle="bold"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <ExpandableListView
+            android:id="@+id/club_info_team_list"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent">
+        </ExpandableListView>
+
+    </LinearLayout>
+
+
+</RelativeLayout>
+<!-- From: file:/home/hesa/AndroidStudioProjects/CoachApp/app/src/main/res/layout/activity_club_info.xml -->

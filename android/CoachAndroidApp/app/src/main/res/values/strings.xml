@@ -1,0 +1,152 @@
+<resources>
+    <string name="member_list_title">members</string>
+    <string name="menu_check_log_title">Check log</string>
+    <string name="menu_info_title">Club information</string>
+    <string name="menu_local_media_manager_title">Local Media Manager</string>
+    <string name="menu_training_mode_title">Training mode</string>
+    <string name="record">Record</string>
+
+
+    <string name="description_info">Info</string>
+    <string name="info_media_deletable">Media (deletable)</string>
+    <string name="info_media_instructional">Instructional media (to upload)</string>
+    <string name="info_media_downloaded">Media (downloaded)</string>
+    <string name="info_media_uploadable">Media (to upload)</string>
+    <string name="info_media_server">Media (server)</string>
+    <string name="info_members">Members</string>
+    <string name="club_name">Club</string>
+    <string name="info_teams">Teams</string>
+    <string name="info_trainingphases">Training phases</string>
+
+    <string name="app_name">Coach Assistant</string>
+    <string name="app_title">Coach Assistant</string>
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="request_permission">This sample needs camera permission.</string>
+
+    <string name="camera_error">This device doesn\'t support Camera2 API.</string>
+    <string name="intro_message">
+        <![CDATA[
+
+
+            This sample demonstrates the basic use of Camera2 API. Check the source code to see how
+            you can display camera preview and take pictures.
+
+
+        ]]>
+    </string>
+    <string name="stop">Stop</string>
+    <string name="team_list_header">My teams</string>
+    <string name="team_list_title">Teams</string>
+    <string name="title_activity_local_media_manager">LocalMediaManager</string>
+    <string name="MUST_CHOSE_TEAM">You must chose a team before you can continue</string>
+    <string name="NEW_MEDIA_DIR">/new</string>;
+    <string name="DOWNLOAD_MEDIA_DIR">/downloaded</string>;
+    <string name="DELETABLE_MEDIA_DIR">/deletable</string>;
+    <string name="title_activity_club_info">Club Information</string>
+    <string name="title_activity_log">LogActivity</string>
+    <string name="title_activity_member">Member</string>
+    <string name="title_activity_teams">TeamsActivity</string>
+    <string name="title_activity_training_phases">TrainingPhasesActivity</string>
+    <string name="trainingphase_list_title">Training Phases</string>
+    <string name="title_activity_login">Sign in</string>
+
+    <string name="sync_in_progress">Syncing</string>
+
+    <string name="login_again_to_get_token">Log in to get a new?</string>
+    <string name="token_invalid">Token invalid</string>
+    <string name="token_invalid_detailed">Your session token is invalid. You need to login in again to get a new token.</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_token_sign_in">Use token</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email completions."
+    </string>
+    <string name="menu_refresh_title">Refresh</string>
+    <string name="team_column">Team: </string>
+    <string name="trainingphase_column">Training phase: </string>
+    <string name="no_network_sync">Can\'t sync without wifi</string>
+    <string name="user_credentials_faulty">"User credentials wrong, update skipped"</string>
+    <string name="network_down_server_up">Network is up, but server seems to be down</string>
+    <string name="getting_data_from_server">Getting data from server</string>
+    <string name="sync_title">Synchronization with server</string>
+    <string name="sync_started">Sync started</string>
+    <string name="destroy_token">Delete token</string>
+
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancel</string>
+    <string name="more_info">More information</string>
+    <string name="missing_file">Missing file removed from local database</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">General</string>
+
+    <string name="pref_title_social_recommendations">Enable social recommendations</string>
+    <string name="pref_description_social_recommendations">Recommendations for people to contact
+        based on your message history
+    </string>
+
+    <string name="pref_title_display_name">Display name</string>
+    <string name="pref_default_display_name">John Smith</string>
+
+
+    <string name="settings_menu">Settings</string>
+    <string name="wifi_sync">Sync on wifi only</string>
+    <string name="wifi_syn_summ">Synchronisation may use a lot of bandwidth. You can limit synchronisation to be done when on wifi only</string>
+    <string name="video_record_text">Time to record training phase videos (sec).</string>
+    <string name="video_record_summ">Set the length, in seconds,to record videos of players performing a training phase.</string>
+    <string name="log_limit_text">Number of log messages to show</string>
+    <string name="log_limit_summ">The number of log entries can become high so you might want to limit how many log entries are shown.</string>
+    <string name="conflicting_file">Conflicting file while uploading</string>
+    <string name="network_timed_out">Network timed out</string>
+    <string name="sync_interrupted">Synchronisation with server interrupted</string>
+    <string name="sync_interrupted_user_detail">Synchronisation with server interrupted by user</string>
+    <string name="sync_interrupted_exc_detail">Synchronisation with server interrupted by an exceptional incident in the system (e g network failure..)</string>
+    <string name="sync_started_msg">Sync started</string>
+    <string name="sync_started_detail">Synchronisation with server started</string>
+    <string name="video_dload_failed">Video recording failed</string>
+    <string name="video_missing_sync">Video not downloaded. Press sync button</string>
+    <string name="cancel_text">Cancel</string>
+    <string name="media_rec_cancel_user">User requested it</string>
+    <string name="media_rec_cancel_exception">Due to exception</string>
+    <string name="media_rec_cancel_screen">Screen orientation changed</string>
+    <string name="network_timeout">Network timeout</string>
+    <string name="error">Error</string>
+
+    <string name="title_activity_splash">SplashActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="club_names">Your clubs</string>
+
+    <string name="more_information">More information</string>
+
+    <!--
+        <string name="PATH_SEPARATOR">/"</string>
+        <string name="CLUB_PATH">clubs</string>
+        <string name="VIDEO_URL_PATH">videos</string>
+        <string name="UUID_PATH">uuid</string>
+        <string name="UPLOAD_PATH">upload</string>
+        <string name="COMPOSITE_PATH">composite</string>
+        <string name="DOWNLOAD_PATH">download</string>
+        <string name="CONTENT_STATUS">Content-Type</string>
+        <string name="SERVER_VIDEO_SUFFIX">.webm</string>
+
+        <string name="HTTP_POST">POST"</string>
+        <string name="HTTP_GET">GET"</string>
+    -->
+
+    <string name="no_players">(No players)</string>
+    <string name="network_timeout_summ">Set the timout for network uploaded (milli seconds). Default value is 5000</string>
+
+</resources>

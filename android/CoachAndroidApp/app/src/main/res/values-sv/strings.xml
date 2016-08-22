@@ -1,0 +1,133 @@
+<resources>
+    <string name="app_name">Tränarappen</string>
+    <string name="app_title">Tränarappen</string>
+
+    <string name="team_list_header">Mina lag</string>
+
+    <string name="title_activity_club_info">Klubbnformation</string>
+    <string name="title_activity_login">Inloggning</string>
+
+    <string name="MUST_CHOSE_TEAM">Du måste välja ett lag innan du kan gå vidare</string>
+    <string name="member_list_title">Medlemmar</string>
+    <string name="menu_check_log_title">Se log</string>
+    <string name="menu_info_title">Klubbinformation</string>
+    <string name="menu_local_media_manager_title">Hantera filer lokalt</string>
+    <string name="info_teams">Lag</string>
+    <string name="info_trainingphases">Träningsmoment</string>
+
+    <string name="menu_training_mode_title">Träningsläge</string>
+    <string name="request_permission">This sample needs camera permission.</string>
+    <string name="team_list_title">Mina lag</string>
+    <string name="title_activity_local_media_manager">Hantera filer på din enhet</string>
+    <string name="title_activity_log">Kolla logfiler</string>
+    <string name="title_activity_member">Medlemmar</string>
+    <string name="title_activity_teams">Lag</string>
+    <string name="title_activity_training_phases">Träningsmoment</string>
+    <string name="trainingphase_list_title">Träningsmoment</string>
+    <string name="menu_refresh_title">Hämta data igen</string>
+    <string name="team_column">Lag:</string>
+    <string name="trainingphase_column">Träningsmoment: </string>
+    <string name="no_network_sync">Kan inte synka utan wifi</string>
+    <string name="user_credentials_faulty">Felaktiga inloggningsuppgifter, ingen uppdatering utförd</string>
+    <string name="network_down_server_up">Nätverket fungerar, men servern svarar inte</string>
+    <string name="getting_data_from_server">Hämtar data från servern</string>
+    <string name="sync_started">Synkning påbörjad</string>
+    <string name="destroy_token">Släng token</string>
+
+    <string name="prompt_email">Epost</string>
+    <string name="prompt_password">Lösenord</string>
+    <string name="action_sign_in">Logga in</string>
+    <string name="action_token_sign_in">Använd token</string>
+    <string name="action_sign_in_short">Logga in</string>
+    <string name="error_invalid_email">Epostadressen är inte giltig</string>
+    <string name="error_invalid_password">Lösenordet är för kort</string>
+    <string name="error_incorrect_password">Lösenordet är inte korrelkt</string>
+    <string name="error_field_required">Detta fält måste vara ifyllt</string>
+    <string name="permission_rationale">"Du måste ha rättigheter att använda dina Kontakter för att så kallad completion skall fungera"
+    </string>
+
+    <string name="sync_title">Synkronisering med server</string>
+    <string name="sync_in_progress">Synk pågår</string>
+
+    <string name="login_again_to_get_token">Logga in på nytt för att få en ny token?</string>
+    <string name="token_invalid">Token ogiltig</string>
+
+    <string name="ok">Ok</string>
+    <string name="cancel">Avbryt</string>
+    <string name="missing_file">Saknad fil borttagen från den lokala databasen</string>
+
+    <string name="settings_menu">Inställningar</string>
+    <string name="wifi_sync">Synka endast med wifi</string>
+    <string name="wifi_syn_summ">Synkronisering kan använda mycket dataöverföring. Du kan begränsa synkronisering till att endast utföras när du är uppkopplad mot ett nätverk.</string>
+    <string name="video_record_text">Hur länge en övning skall spelas in.</string>
+    <string name="video_record_summ">Sätt längden, i sekunder, på hur låmga tid en spelare som utför en träning skall spelas in.</string>
+
+    <string name="info_media_deletable">Media som kan raderas:</string>
+    <string name="info_media_instructional">Instruktionersfilmer som kan laddas upp: </string>
+    <string name="info_media_downloaded">Nedladdade filmer: </string>
+    <string name="info_media_uploadable">Media som kan laddas upp</string>
+    <string name="log_limit_text">Antal log-poster att visa</string>
+    <string name="log_limit_summ">Antalet log-poster kan bli stort so du vill förmodligen begränsa antalet som visas.</string>
+
+    <string name="conflicting_file">Konflikt mellan filer under uppladdning.</string>
+    <string name="network_timed_out">Timeout för nätverket nådd</string>
+    <string name="sync_interrupted">Synkronisering med servern avbruten</string>
+    <string name="sync_interrupted_user_detail">Synkronisering med server avbruten av användaren.</string>
+    <string name="sync_interrupted_exc_detail">Synkronisering med server avbruten på grund av en oförutsedd händelse (t ex nätverksfel).</string>
+    <string name="sync_started_msg">Sync påbörjad</string>
+    <string name="sync_started_detail">Synkronisering med server påbörjad</string>
+    <string name="video_dload_failed">Inspelning av video misslyckades</string>
+    <string name="video_missing_sync">Video inte nedladdad, tryck sync-knappen eller välj Hämta data i menyn</string>
+    <string name="cancel_text">Avbryt</string>
+
+    <string name="network_timeout">Timeout för nätverket</string>
+
+    <string name="media_rec_cancel_user">Användaren valde det</string>
+    <string name="media_rec_cancel_exception">Oväntad händelse</string>
+    <string name="media_rec_cancel_screen">Skärmen vändes under inspelning</string>
+
+    <string name="more_information">Mer information</string>
+
+
+    <string name="record">Spela in</string>
+    <string name="description_info">Info</string>
+    <string name="info_media_server">Media (server)</string>
+    <string name="club_name">Klubb</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="camera_error">Denna enhet har inte stöd för Camera2 API.</string>
+    <string name="intro_message">
+        <![CDATA[
+
+
+            This sample demonstrates the basic use of Camera2 API. Check the source code to see how
+            you can display camera preview and take pictures.
+
+
+        ]]>
+    </string>
+    <string name="stop">Stop</string>
+    <string name="NEW_MEDIA_DIR">/new</string>;
+    <string name="DOWNLOAD_MEDIA_DIR">/downloaded</string>;
+    <string name="DELETABLE_MEDIA_DIR">/deletable</string>;
+    <string name="token_invalid_detailed">Din sessionsnyckel (token) ör ogiltig. Du måste logga in igen för att skapa en ny.</string>
+    <string name="title_activity_settings">Inställningar</string>
+    <string name="pref_header_general">Generella</string>
+
+    <string name="pref_title_social_recommendations">Slå på sociala rekommendationer</string>
+    <string name="pref_description_social_recommendations">Recommendations for people to contact
+        based on your message history
+    </string>
+    <string name="pref_title_display_name">Visa namn</string>
+    <string name="pref_default_display_name">John Smith</string>
+    <string name="title_activity_splash">SplashActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="club_names">Dina klubbar</string>
+    <string name="info_members">Medlemmar</string>
+    <string name="more_info">Mer information</string>
+
+    <string name="no_players">(Inga spelare)</string>
+    <string name="network_timeout_summ">Sätt värdet för timeout för nätverket. Standardvärdet är 5000</string>
+    <string name="error">Fel</string>
+
+</resources>

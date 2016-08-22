@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/topsync"
+        android:icon="@drawable/ic_refresh_black_24dp"
+        android:title="Refresh"
+        app:showAsAction="ifRoom"
+        android:scaleType="fitXY"/>
+    />
+
+    <item
+        android:id="@+id/menu_refresh"
+        android:orderInCategory="100"
+        android:title="@string/menu_refresh_title"
+        />
+<!--
+    <item
+        android:id="@+id/menu_media_manager"
+        android:orderInCategory="100"
+        android:title="@string/menu_local_media_manager_title"
+        />
+-->
+    <item
+        android:id="@+id/menu_log_file"
+        android:orderInCategory="100"
+        android:title="@string/menu_check_log_title"
+        />
+
+    <item
+        android:id="@+id/menu_club_info"
+        android:orderInCategory="100"
+        android:title="@string/menu_info_title"
+        />
+
+
+    <item
+        android:id="@+id/menu_settings"
+        android:orderInCategory="100"
+        android:title="@string/settings_menu"
+        />
+
+    <item
+        android:id="@+id/menu_destroy_token"
+        android:orderInCategory="100"
+        android:title="@string/destroy_token"
+        />
+
+    <item
+        android:id="@+id/menu_splah"
+        android:orderInCategory="100"
+        android:title="show long splash"
+        />
+
+</menu><!-- From: file:/home/hesa/AndroidStudioProjects/CoachApp/app/src/main/res/menu/top_menu.xml -->

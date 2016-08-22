@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="coachassistant.sandklef.com.coachapp"
+    >
+
+
+    <uses-sdk
+        android:minSdkVersion="21"
+        android:targetSdkVersion="21" />
+
+<!---
+    <uses-permission android:name="com.android.vending.CHECK_LICENSE" />
+-->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+
+    <uses-feature android:name="android.hardware.camera"/>
+    <uses-feature android:name="android.hardware.camera.autofocus"/>
+
+    <uses-permission android:name="android.permission.CAMERA" />
+<!--
+    <uses-feature android:name="android.hardware.camera.autofocus"/>
+    <uses-feature android:name="android.hardware.camera2.full" />
+-->
+    <!-- To auto-complete the email text field in the login form with the user's emails -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_PROFILE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/coachassist"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name="com.sandklef.coachapp.activities.TopActivity">
+
+            <!--
+                <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.sandklef.coachapp.activities.TopActivity" />
+            -->
+        </activity>
+        <!--
+        <activity android:name="com.sandklef.coachapp.activities.MainActivity" >
+
+        </activity>
+        -->
+        <activity
+            android:name="com.sandklef.coachapp.activities.LocalMediaManager"
+            android:label="@string/title_activity_local_media_manager" />
+        <activity
+            android:name="com.sandklef.coachapp.activities.LogActivity"
+            android:label="@string/title_activity_log" />
+        <activity
+            android:name="com.sandklef.coachapp.activities.TeamsActivity"
+            android:label="@string/title_activity_teams"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name="com.sandklef.coachapp.activities.TrainingPhasesActivity"
+            android:label="@string/title_activity_training_phases"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name="com.sandklef.coachapp.activities.MemberActivity"
+            android:label="@string/title_activity_member"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name="com.sandklef.coachapp.activities.ClubInfoActivity"
+            android:label="@string/title_activity_club_info" />
+        <activity android:name="com.sandklef.coachapp.activities.VideoActivity" />
+        <activity
+            android:name="com.sandklef.coachapp.activities.LoginActivity"
+            android:label="@string/title_activity_login">
+        </activity>
+        <activity
+            android:name="com.sandklef.coachapp.activities.MediaRecorderActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_login" />
+        <activity
+            android:name="com.sandklef.coachapp.activities.SettingsActivity"
+            android:label="@string/title_activity_settings" />
+
+        <!--
+     ATTENTION: This was auto-generated to add Google Play services to your project for
+     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        -->
+        <activity
+            android:name="com.sandklef.coachapp.activities.SplashActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_splash"
+            android:theme="@style/FullscreenTheme">
+            <intent-filter android:label="@string/app_name">
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

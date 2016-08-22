@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_training"
+        android:orderInCategory="100"
+        android:title="@string/menu_training_mode_title" />
+
+    <item
+        android:id="@+id/menu_log"
+        android:orderInCategory="100"
+        android:title="@string/menu_check_log_title" />
+
+    <item
+        android:id="@+id/menu_info"
+        android:orderInCategory="100"
+        android:title="Club info"/>
+
+    <item
+        android:id="@+id/menu_media"
+        android:orderInCategory="100"
+        android:title="Filters > ">
+
+        <menu>
+            <item
+                android:id="@+id/menu_all_media"
+                android:orderInCategory="200"
+                android:title="All media" />
+            <item
+                android:id="@+id/menu_new_media"
+                android:orderInCategory="400"
+                android:title="Only new media" />
+
+            <item
+                android:id="@+id/menu_created_media"
+                android:orderInCategory="400"
+                android:title="Only server created media" />
+
+            <item
+                android:id="@+id/menu_uploaded_media"
+                android:orderInCategory="400"
+                android:title="Only uploaded media" />
+
+            <item
+                android:id="@+id/menu_deletable_media"
+                android:orderInCategory="400"
+                android:title="Only deletable media" />
+        </menu>
+
+    </item>
+
+
+</menu><!-- From: file:/home/hesa/AndroidStudioProjects/CoachApp/app/src/main/res/menu/local_media_menu.xml -->
